@@ -54,8 +54,6 @@ spec:
       memory: "512Mi"
   ingresses:
     - "https://edi-transport.intern.dev.nav.no"
-  envFrom:
-    - secret: edi-adapter-secrets
   vault:
     enabled: true
     paths:
