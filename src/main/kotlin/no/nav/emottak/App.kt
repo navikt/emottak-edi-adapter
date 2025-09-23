@@ -20,7 +20,8 @@ internal val log = LoggerFactory.getLogger("no.nav.emottak.edi.adapter")
 fun main() = SuspendApp {
     result {
         resourceScope {
-            val deps = initDependencies()
+            val deps = dependencies()
+
             server(
                 Netty,
                 port = config().server.port.value,
@@ -40,7 +41,6 @@ internal fun ediAdapterModule(
     return {
         configureMetrics(meterRegistry)
         configureContentNegotiation()
-        // configureAuthentication()
         configureRoutes(meterRegistry)
         configureCallLogging()
     }
