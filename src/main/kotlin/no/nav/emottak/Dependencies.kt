@@ -71,7 +71,6 @@ private fun httpClient(
     install(DpopAuth) {
         azureAuth = config.azureAuth
         loadTokens = { obtainDpopTokens(config.azureAuth, httpTokenClient) }
-
     }
     defaultRequest { url(config.nhn.baseUrl.toString()) }
 }
