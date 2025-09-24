@@ -2,10 +2,13 @@ package no.nav.emottak.edi.adapter.plugin
 
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.http.HttpHeaders.Authorization
+import io.ktor.http.URLBuilder
 import no.nav.emottak.edi.adapter.config.AzureAuth
 import no.nav.emottak.edi.adapter.model.DpopTokens
 import no.nav.emottak.edi.adapter.util.dpopProofWithTokenInfo
 import java.net.URI
+
+private const val QUERY_PARAMETERS = "?"
 
 val DpopAuth = createClientPlugin("DpopAuth", ::DpopAuthConfig) {
     val config = pluginConfig
@@ -18,7 +21,7 @@ val DpopAuth = createClientPlugin("DpopAuth", ::DpopAuthConfig) {
         val dpopTokens = config.tokens!!
 
         val proof = dpopProofWithTokenInfo(
-            URI(request.url.buildString()),
+            urlWithPath(request.url),
             request.method,
             dpopTokens.accessToken
         )
@@ -34,3 +37,7 @@ class DpopAuthConfig {
     var loadTokens: (suspend () -> DpopTokens)? = null
     var tokens: DpopTokens? = null
 }
+
+private fun urlWithPath(urlBuilder: URLBuilder): URI =
+    URI
+        .create(urlBuilder.toString().substringBefore(QUERY_PARAMETERS))
