@@ -115,7 +115,7 @@ private fun publicRSAKey(): RSAKey =
         .algorithm(RS256)
         .build()
 
-private fun accessTokenHash(accessToken: String): String =
+internal fun accessTokenHash(accessToken: String): String =
     getUrlEncoder()
         .withoutPadding()
         .encodeToString(

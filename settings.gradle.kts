@@ -79,6 +79,8 @@ dependencyResolutionManagement {
 
             library("kotest-runner-junit5", "io.kotest", "kotest-runner-junit5").versionRef("kotest")
             library("kotest-framework-datatest", "io.kotest", "kotest-framework-datatest").versionRef("kotest")
+            library("kotest-extensions-jvm", "io.kotest", "kotest-extensions-jvm").versionRef("kotest")
+
             library("kotest-extensions-testcontainers", "io.kotest.extensions", "kotest-extensions-testcontainers").versionRef("kotest-extensions")
 
             library("kotest-assertions-arrow", "io.kotest.extensions", "kotest-assertions-arrow").versionRef("arrow")

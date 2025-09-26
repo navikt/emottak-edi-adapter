@@ -15,6 +15,7 @@ tasks {
     }
     test {
         useJUnitPlatform()
+        jvmArgs("--add-opens=java.base/java.util=ALL-UNNAMED")
     }
     ktlintFormat {
         enabled = true
@@ -63,6 +64,7 @@ dependencies {
     implementation(libs.emottak.utils)
     testImplementation(testLibs.bundles.kotest)
     testImplementation(testLibs.kotest.assertions.arrow)
+    testImplementation(testLibs.kotest.extensions.jvm)
     testImplementation(testLibs.kotest.extensions.testcontainers)
     testImplementation(testLibs.ktor.server.test.host)
     testImplementation(testLibs.ktor.client.mock)
