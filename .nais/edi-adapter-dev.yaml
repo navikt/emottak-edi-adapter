@@ -54,6 +54,8 @@ spec:
       memory: "512Mi"
   ingresses:
     - "https://edi-transport.intern.dev.nav.no"
+  envFrom:
+    - secret: emottak-nhn-edi
   vault:
     enabled: true
     paths:
@@ -67,3 +69,20 @@ spec:
         - application: azure-token-generator
           namespace: aura
           cluster: dev-gcp
+  env:
+    - name: NHN_BASE_URL
+      value: "https://api.tjener.test.melding.nhn.no"
+    - name: NHN_TOKEN_ENDPOINT
+      value: "https://helseid-sts.test.nhn.no/connect/token"
+    - name: NHN_CLIENT_KEY_ID
+      value: "pLLt3U8W5-f7eIyfAdGCfsXVyM4seQD6uzvTm2THctY"
+    - name: NHN_CLIENT_ID
+      value: "c1ee7d58-478e-440b-824e-9315d8910480"
+    - name: NHN_CLIENT_AUDIENCE
+      value: "https://helseid-sts.test.nhn.no"
+    - name: NHN_CLIENT_SCOPE
+      value: "nhn:msh/api"
+    - name: NHN_CLIENT_GRANT_TYPE
+      value: "client_credentials"
+    - name: NHN_CLIENT_ASSERTION_TYPE
+      value: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
