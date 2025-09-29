@@ -12,6 +12,8 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             version("arrow", "2.0.1")
+            version("jwt", "4.4.0")
+            version("nimbus-jwt", "9.31")
             version("suspendapp", "0.5.0")
             version("ktor", "3.0.3")
             version("token-validation-ktor", "5.0.15")
@@ -32,6 +34,9 @@ dependencyResolutionManagement {
             library("hoplite-core", "com.sksamuel.hoplite", "hoplite-core").versionRef("hoplite")
             library("hoplite-hocon", "com.sksamuel.hoplite", "hoplite-hocon").versionRef("hoplite")
 
+            library("jwt", "com.auth0", "java-jwt").versionRef("jwt")
+            library("nimbus-jwt", "com.nimbusds", "nimbus-jose-jwt").versionRef("nimbus-jwt")
+
             library("ktor-server-core", "io.ktor", "ktor-server-core").versionRef("ktor")
             library("ktor-server-netty", "io.ktor", "ktor-server-netty").versionRef("ktor")
             library("ktor-server-call-logging-jvm", "io.ktor", "ktor-server-call-logging-jvm").versionRef("ktor")
@@ -41,6 +46,7 @@ dependencyResolutionManagement {
             library("ktor-client-core", "io.ktor", "ktor-client-core").versionRef("ktor")
             library("ktor-client-cio", "io.ktor", "ktor-client-cio").versionRef("ktor")
             library("ktor-client-auth", "io.ktor", "ktor-client-auth").versionRef("ktor")
+            library("ktor-client-logging", "io.ktor", "ktor-client-logging").versionRef("ktor")
 
             library("ktor-server-metrics-micrometer", "io.ktor", "ktor-server-metrics-micrometer").versionRef("ktor")
             library("micrometer-registry-prometheus", "io.micrometer", "micrometer-registry-prometheus").versionRef("prometheus")
@@ -73,6 +79,8 @@ dependencyResolutionManagement {
 
             library("kotest-runner-junit5", "io.kotest", "kotest-runner-junit5").versionRef("kotest")
             library("kotest-framework-datatest", "io.kotest", "kotest-framework-datatest").versionRef("kotest")
+            library("kotest-extensions-jvm", "io.kotest", "kotest-extensions-jvm").versionRef("kotest")
+
             library("kotest-extensions-testcontainers", "io.kotest.extensions", "kotest-extensions-testcontainers").versionRef("kotest-extensions")
 
             library("kotest-assertions-arrow", "io.kotest.extensions", "kotest-assertions-arrow").versionRef("arrow")

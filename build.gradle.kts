@@ -15,6 +15,7 @@ tasks {
     }
     test {
         useJUnitPlatform()
+        jvmArgs("--add-opens=java.base/java.util=ALL-UNNAMED")
     }
     ktlintFormat {
         enabled = true
@@ -47,10 +48,13 @@ dependencies {
     implementation(libs.bundles.prometheus)
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.hocon)
+    implementation(libs.jwt)
+    implementation(libs.nimbus.jwt)
     implementation(libs.ktor.client.auth)
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.logging)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.server.auth.jvm)
     implementation(libs.ktor.server.content.negotiation)
@@ -60,6 +64,7 @@ dependencies {
     implementation(libs.emottak.utils)
     testImplementation(testLibs.bundles.kotest)
     testImplementation(testLibs.kotest.assertions.arrow)
+    testImplementation(testLibs.kotest.extensions.jvm)
     testImplementation(testLibs.kotest.extensions.testcontainers)
     testImplementation(testLibs.ktor.server.test.host)
     testImplementation(testLibs.ktor.client.mock)
