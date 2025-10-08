@@ -9,6 +9,10 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.header
+import io.ktor.http.HttpHeaders.Accept
 import io.ktor.serialization.kotlinx.json.json
 import io.micrometer.prometheus.PrometheusConfig.DEFAULT
 import io.micrometer.prometheus.PrometheusMeterRegistry
@@ -41,6 +45,9 @@ private fun httpTokenClient(config: Config, clientEngine: HttpClientEngine): Htt
         install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
     }
 
+private const val API_VERSION = "api-version"
+private const val NHN_SOURCE_SYSTEM = "nhn-source-system"
+
 private fun httpClient(
     config: Config,
     clientEngine: HttpClientEngine,
@@ -49,12 +56,21 @@ private fun httpClient(
     install(HttpTimeout) {
         connectTimeoutMillis = config.httpClient.connectionTimeout.value
     }
+    install(Logging) { level = LogLevel.INFO }
     install(ContentNegotiation) { json() }
     install(DpopAuth) {
         azureAuth = config.azureAuth
         loadTokens = { obtainDpopTokens(config.azureAuth, httpTokenClient) }
     }
-    defaultRequest { url(config.nhn.baseUrl.toString()) }
+    defaultRequest {
+        url(config.nhn.baseUrl.toString())
+
+        val httpClient = config.httpClient
+
+        header(API_VERSION, httpClient.apiVersionHeader.value)
+        header(NHN_SOURCE_SYSTEM, httpClient.sourceSystemHeader.value)
+        header(Accept, httpClient.acceptTypeHeader.value)
+    }
 }
 
 suspend fun ResourceScope.dependencies(): Dependencies = awaitAll {

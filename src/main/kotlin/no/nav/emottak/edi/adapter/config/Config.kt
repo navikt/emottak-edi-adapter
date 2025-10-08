@@ -8,7 +8,7 @@ data class Config(
     val azureAuth: AzureAuth,
     val server: Server,
     val httpClient: HttpClient,
-    val httpTokenClient: HttpClient
+    val httpTokenClient: HttpTokenClient
 )
 
 data class Nhn(
@@ -51,9 +51,23 @@ data class AzureAuth(
     value class ClientAssertionType(val value: String)
 }
 
+@JvmInline
+value class Timeout(val value: Long)
+
 data class HttpClient(
-    val connectionTimeout: Timeout
+    val connectionTimeout: Timeout,
+    val apiVersionHeader: ApiVersionHeader,
+    val sourceSystemHeader: SourceSystemHeader,
+    val acceptTypeHeader: AcceptTypeHeader
 ) {
     @JvmInline
-    value class Timeout(val value: Long)
+    value class ApiVersionHeader(val value: String)
+
+    @JvmInline
+    value class SourceSystemHeader(val value: String)
+
+    @JvmInline
+    value class AcceptTypeHeader(val value: String)
 }
+
+data class HttpTokenClient(val connectionTimeout: Timeout)
