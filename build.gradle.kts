@@ -37,6 +37,10 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
     }
 }
 
+tasks.withType<Test> {
+    jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
+}
+
 dependencies {
     implementation(libs.arrow.core)
     implementation(libs.arrow.functions)
