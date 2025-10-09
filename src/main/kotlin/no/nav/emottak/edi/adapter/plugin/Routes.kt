@@ -12,10 +12,7 @@ import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import java.time.Instant
-import kotlin.uuid.Uuid
 import kotlinx.serialization.json.Json
-import no.nav.emottak.utils.common.model.DuplicateCheckRequest
 import no.nav.emottak.utils.edi2.models.AppRecError
 import no.nav.emottak.utils.edi2.models.AppRecStatus
 import no.nav.emottak.utils.edi2.models.ApprecInfo
@@ -27,6 +24,8 @@ import no.nav.emottak.utils.edi2.models.OrderBy
 import no.nav.emottak.utils.edi2.models.PostAppRecRequest
 import no.nav.emottak.utils.edi2.models.PostMessageRequest
 import no.nav.emottak.utils.edi2.models.StatusInfo
+import java.time.Instant
+import kotlin.uuid.Uuid
 
 fun Application.configureRoutes(
     registry: PrometheusMeterRegistry
