@@ -53,7 +53,7 @@ fun Route.internalRoutes(registry: PrometheusMeterRegistry) {
 }
 
 fun Route.externalRoutes() {
-    route("/api") {
+    route("/api/v1") {
         get("/edi/adapter") {
             call.respondText("Pong from emottak-edi-adapter")
         }
@@ -137,7 +137,7 @@ fun Route.externalRoutes() {
             call.respond(HttpStatusCode.OK, dummyResponse)
         }
 
-        get("/messages/{id}/business-document") {
+        get("/messages/{id}/document") {
             val id = call.parameters["id"]?.let { Uuid.parse(it) }
 
             // Business logic here
