@@ -22,9 +22,11 @@ import java.security.MessageDigest.getInstance
 import java.time.Instant.now
 import java.util.Base64.getUrlEncoder
 import java.util.Date.from
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.uuid.Uuid
 
-private val keyPair = RSAKey.parse(config().nhn.keyPair.value)
+private val keyPair = RSAKey.parse(decodeKeypair(config().nhn.keyPair.value))
 
 fun dpopProofWithoutNonce(): String =
     dpopProof(
@@ -138,3 +140,6 @@ private fun Builder.ath(accessToken: DPoPAccessToken?) =
 
 private fun Builder.nonce(nonce: Nonce?) =
     apply { nonce?.let { claim(NONCE_CLAIM_NAME, it.value) } }
+
+@OptIn(ExperimentalEncodingApi::class)
+private fun decodeKeypair(keypair: String): String = Base64.decode(keypair).decodeToString()
