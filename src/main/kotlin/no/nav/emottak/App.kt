@@ -4,6 +4,7 @@ import arrow.continuations.SuspendApp
 import arrow.continuations.ktor.server
 import arrow.core.raise.result
 import arrow.fx.coroutines.resourceScope
+import io.ktor.client.HttpClient
 import io.ktor.server.application.Application
 import io.ktor.server.netty.Netty
 import io.micrometer.prometheus.PrometheusMeterRegistry
@@ -26,7 +27,7 @@ fun main() = SuspendApp {
                 Netty,
                 port = config().server.port.value,
                 preWait = config().server.preWait,
-                module = ediAdapterModule(deps.meterRegistry)
+                module = ediAdapterModule(deps.httpClient, deps.meterRegistry)
             )
 
             awaitCancellation()
@@ -36,12 +37,13 @@ fun main() = SuspendApp {
 }
 
 internal fun ediAdapterModule(
+    ediClient: HttpClient,
     meterRegistry: PrometheusMeterRegistry
 ): Application.() -> Unit {
     return {
         configureMetrics(meterRegistry)
         configureContentNegotiation()
-        configureRoutes(meterRegistry)
+        configureRoutes(ediClient, meterRegistry)
         configureCallLogging()
     }
 }
