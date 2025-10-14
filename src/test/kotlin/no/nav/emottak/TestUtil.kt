@@ -6,6 +6,9 @@ import com.nimbusds.jose.jwk.KeyUse.SIGNATURE
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import java.util.Date
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.text.Charsets.UTF_8
 
 val generateRsaJwk: () -> RSAKey = {
     RSAKeyGenerator(2048)
@@ -15,3 +18,6 @@ val generateRsaJwk: () -> RSAKey = {
         .generate()
 }
     .memoize()
+
+@OptIn(ExperimentalEncodingApi::class)
+fun RSAKey.base64Encoded(): String = Base64.encode(toJSONString().toByteArray(UTF_8))
