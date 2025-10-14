@@ -14,7 +14,6 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.ktor.http.HttpMethod.Companion.Get
 import io.ktor.http.HttpMethod.Companion.Post
-import no.nav.emottak.base64Encoded
 import no.nav.emottak.config
 import no.nav.emottak.generateRsaJwk
 import java.net.URI
@@ -24,10 +23,10 @@ import kotlin.uuid.Uuid
 class JWTUtilSpec : StringSpec(
     {
         val rsaJwk = generateRsaJwk()
-        val rsaJwkBase64 = rsaJwk.base64Encoded()
+        val rsaJwkJson = rsaJwk.toString()
 
         "should generate valid DPoP proof and required claims without nonce" {
-            withEnvironment("emottak-nhn-edi", rsaJwkBase64) {
+            withEnvironment("emottak-nhn-edi", rsaJwkJson) {
                 val config = config()
 
                 println("KEY from env: ${config.nhn.keyPair.value}")
@@ -46,7 +45,7 @@ class JWTUtilSpec : StringSpec(
         }
 
         "should generate valid DPoP proof and required claims with nonce" {
-            withEnvironment("emottak-nhn-edi", rsaJwkBase64) {
+            withEnvironment("emottak-nhn-edi", rsaJwkJson) {
                 val config = config().azureAuth
 
                 val random = Uuid.random()
@@ -65,7 +64,7 @@ class JWTUtilSpec : StringSpec(
         }
 
         "should generate valid DPoP proof and required claims with access token" {
-            withEnvironment("emottak-nhn-edi", rsaJwkBase64) {
+            withEnvironment("emottak-nhn-edi", rsaJwkJson) {
                 val uri = URI("https://my.uri.com")
                 val accessToken = DPoPAccessToken("my access token")
 
