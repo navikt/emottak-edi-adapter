@@ -16,17 +16,16 @@ import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
-import no.nav.emottak.base64Encoded
 import no.nav.emottak.config
 import no.nav.emottak.generateRsaJwk
 
 class DpopTokenUtilSpec : StringSpec(
     {
         val rsaJwk = generateRsaJwk()
-        val rsaJwkBase64 = rsaJwk.base64Encoded()
+        val rsaJwkJson = rsaJwk.toString()
 
         "should return tokens immediately if first call is 200" {
-            withEnvironment("emottak-nhn-edi", rsaJwkBase64) {
+            withEnvironment("emottak-nhn-edi", rsaJwkJson) {
                 val config = config().azureAuth
 
                 val engine = MockEngine { _ ->
@@ -55,7 +54,7 @@ class DpopTokenUtilSpec : StringSpec(
         }
 
         "should retry with nonce if first call returns 400" {
-            withEnvironment("emottak-nhn-edi", rsaJwkBase64) {
+            withEnvironment("emottak-nhn-edi", rsaJwkJson) {
                 val config = config().azureAuth
                 var callCount = 0
                 val engine = MockEngine { _ ->
@@ -91,7 +90,7 @@ class DpopTokenUtilSpec : StringSpec(
         }
 
         "should throw if final response is not 200" {
-            withEnvironment("emottak-nhn-edi", rsaJwkBase64) {
+            withEnvironment("emottak-nhn-edi", rsaJwkJson) {
                 val config = config().azureAuth
 
                 val engine = MockEngine { _ ->

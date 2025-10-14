@@ -15,7 +15,6 @@ import io.ktor.http.HttpMethod.Companion.Get
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.http.headersOf
 import kotlinx.datetime.Clock
-import no.nav.emottak.base64Encoded
 import no.nav.emottak.config
 import no.nav.emottak.edi.adapter.model.DpopTokens
 import no.nav.emottak.generateRsaJwk
@@ -26,7 +25,7 @@ class DpopAuthSpec : StringSpec(
         val rsaJwk = generateRsaJwk()
 
         "should fetch token if none is cached and add headers" {
-            withEnvironment("emottak-nhn-edi", rsaJwk.base64Encoded()) {
+            withEnvironment("emottak-nhn-edi", rsaJwk.toString()) {
                 val apiUrl = "https://api.test/Messages"
 
                 val dummyTokens = DpopTokens(
