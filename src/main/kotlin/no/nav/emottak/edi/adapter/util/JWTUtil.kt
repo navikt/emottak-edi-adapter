@@ -28,7 +28,7 @@ import java.util.Base64.getUrlEncoder
 import java.util.Date.from
 import kotlin.uuid.Uuid
 
-private val keyPair = RSAKey.parse(parsePair(config().nhn.keyPairPath.value))
+private val keyPair by lazy { RSAKey.parse(parsePair(config().nhn.keyPairPath.value)) }
 
 fun dpopProofWithoutNonce(): String =
     dpopProof(
