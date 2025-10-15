@@ -20,6 +20,7 @@ import net.minidev.json.parser.JSONParser
 import net.minidev.json.parser.JSONParser.MODE_PERMISSIVE
 import no.nav.emottak.config
 import no.nav.emottak.edi.adapter.config.AzureAuth
+import java.io.File
 import java.net.URI
 import java.security.MessageDigest.getInstance
 import java.time.Instant.now
@@ -27,7 +28,7 @@ import java.util.Base64.getUrlEncoder
 import java.util.Date.from
 import kotlin.uuid.Uuid
 
-private val keyPair = RSAKey.parse(parsePair(config().nhn.keyPair.value))
+private val keyPair = RSAKey.parse(parsePair(config().nhn.keyPairPath.value))
 
 fun dpopProofWithoutNonce(): String =
     dpopProof(
@@ -118,6 +119,10 @@ private fun publicRSAKey(): RSAKey =
         .algorithm(RS256)
         .build()
 
+internal fun parsePair(keypairPath: String): JSONObject =
+    JSONParser(MODE_PERMISSIVE)
+        .parse(File(keypairPath).readText()) as JSONObject
+
 internal fun accessTokenHash(accessToken: String): String =
     getUrlEncoder()
         .withoutPadding()
@@ -141,5 +146,3 @@ private fun Builder.ath(accessToken: DPoPAccessToken?) =
 
 private fun Builder.nonce(nonce: Nonce?) =
     apply { nonce?.let { claim(NONCE_CLAIM_NAME, it.value) } }
-
-private fun parsePair(keypair: String): JSONObject = JSONParser(MODE_PERMISSIVE).parse(keypair) as JSONObject
