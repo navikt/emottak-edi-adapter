@@ -15,7 +15,6 @@ tasks {
     }
     test {
         useJUnitPlatform()
-        jvmArgs("--add-opens=java.base/java.util=ALL-UNNAMED")
     }
     ktlintFormat {
         enabled = true
