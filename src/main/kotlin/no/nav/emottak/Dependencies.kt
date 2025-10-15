@@ -19,7 +19,8 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.serialization.json.Json
 import no.nav.emottak.edi.adapter.config.Config
 import no.nav.emottak.edi.adapter.plugin.DpopAuth
-import no.nav.emottak.edi.adapter.util.obtainDpopTokens
+import no.nav.emottak.edi.adapter.util.DpopJwtProvider
+import no.nav.emottak.edi.adapter.util.DpopTokenUtil
 
 data class Dependencies(
     val httpClient: HttpClient,
@@ -50,17 +51,24 @@ private const val NHN_SOURCE_SYSTEM = "nhn-source-system"
 
 private fun httpClient(
     config: Config,
+    jwtProvider: DpopJwtProvider,
     clientEngine: HttpClientEngine,
     httpTokenClient: HttpClient
 ): HttpClient = HttpClient(clientEngine) {
+    val dpopTokenUtil = DpopTokenUtil(
+        config,
+        jwtProvider,
+        httpTokenClient
+    )
+
     install(HttpTimeout) {
         connectTimeoutMillis = config.httpClient.connectionTimeout.value
     }
     install(Logging) { level = LogLevel.INFO }
     install(ContentNegotiation) { json() }
     install(DpopAuth) {
-        azureAuth = config.azureAuth
-        loadTokens = { obtainDpopTokens(config.azureAuth, httpTokenClient) }
+        dpopJwtProvider = jwtProvider
+        loadTokens = { dpopTokenUtil.obtainDpopTokens() }
     }
     defaultRequest {
         url(config.nhn.baseUrl.toString())
@@ -73,17 +81,17 @@ private fun httpClient(
     }
 }
 
-suspend fun ResourceScope.dependencies(): Dependencies = awaitAll {
-    val config = config()
+suspend fun ResourceScope.dependencies(dpopJwtProvider: DpopJwtProvider): Dependencies =
+    awaitAll {
+        val config = config()
+        val metricsRegistry = async { metricsRegistry() }
+        val httpTokenClientEngine = async { httpTokenClientEngine() }
+        val httpTokenClient = async { httpTokenClient(config, httpTokenClientEngine.await()) }.await()
+        val httpClientEngine = async { httpClientEngine() }.await()
+        val httpClient = async { httpClient(config, dpopJwtProvider, httpClientEngine, httpTokenClient) }
 
-    val metricsRegistry = async { metricsRegistry() }
-    val httpTokenClientEngine = async { httpTokenClientEngine() }
-    val httpTokenClient = async { httpTokenClient(config, httpTokenClientEngine.await()) }.await()
-    val httpClientEngine = async { httpClientEngine() }.await()
-    val httpClient = async { httpClient(config, httpClientEngine, httpTokenClient) }
-
-    Dependencies(
-        httpClient.await(),
-        metricsRegistry.await()
-    )
-}
+        Dependencies(
+            httpClient.await(),
+            metricsRegistry.await()
+        )
+    }

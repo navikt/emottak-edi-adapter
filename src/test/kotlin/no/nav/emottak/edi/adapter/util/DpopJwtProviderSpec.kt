@@ -3,7 +3,6 @@ package no.nav.emottak.edi.adapter.util
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm.RSA256
 import com.nimbusds.jose.crypto.RSASSAVerifier
-import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.oauth2.sdk.token.DPoPAccessToken
 import com.nimbusds.openid.connect.sdk.Nonce
@@ -19,37 +18,33 @@ import java.net.URI
 import java.util.Base64.getUrlDecoder
 import kotlin.uuid.Uuid
 
-class JWTUtilSpec : StringSpec(
+class DpopJwtProviderSpec : StringSpec(
     {
-        val rsaJwk = RSAKey.parse(parsePair(config().nhn.keyPairPath.value))
+        val jwtProvider = DpopJwtProvider(config())
 
         "should generate valid DPoP proof and required claims without nonce" {
-            val config = config()
-
-            val signedJwtJson = dpopProofWithoutNonce()
+            val signedJwtJson = jwtProvider.dpopProofWithoutNonce()
 
             val signedJwt = SignedJWT.parse(signedJwtJson)
-            signedJwt.verify(RSASSAVerifier(rsaJwk.toRSAPublicKey())) shouldBe true
+            signedJwt.verify(RSASSAVerifier(jwtProvider.rsaKey())) shouldBe true
 
             val claims = signedJwt.jwtClaimsSet
             claims.getStringClaim("htm") shouldBe "POST"
-            claims.getStringClaim("htu") shouldBe config.azureAuth.tokenEndpoint.toString()
+            claims.getStringClaim("htu") shouldBe config().azureAuth.tokenEndpoint.toString()
             claims.getStringClaim("jti") shouldNotBe null
             claims.getDateClaim("iat") shouldNotBe null
         }
 
         "should generate valid DPoP proof and required claims with nonce" {
-            val config = config().azureAuth
-
             val random = Uuid.random()
-            val signedJwtJson = dpopProofWithNonce(Nonce(random.toString()))
+            val signedJwtJson = jwtProvider.dpopProofWithNonce(Nonce(random.toString()))
 
             val signedJwt = SignedJWT.parse(signedJwtJson)
-            signedJwt.verify(RSASSAVerifier(rsaJwk.toRSAPublicKey())) shouldBe true
+            signedJwt.verify(RSASSAVerifier(jwtProvider.rsaKey())) shouldBe true
 
             val claims = signedJwt.jwtClaimsSet
             claims.getStringClaim("htm") shouldBe Post.value
-            claims.getStringClaim("htu") shouldBe config.tokenEndpoint.toString()
+            claims.getStringClaim("htu") shouldBe config().azureAuth.tokenEndpoint.toString()
             claims.getStringClaim("nonce") shouldBe random.toString()
             claims.getStringClaim("jti") shouldNotBe null
             claims.getDateClaim("iat") shouldNotBe null
@@ -59,40 +54,39 @@ class JWTUtilSpec : StringSpec(
             val uri = URI("https://my.uri.com")
             val accessToken = DPoPAccessToken("my access token")
 
-            val signedJwtJson = dpopProofWithTokenInfo(uri, Get, accessToken)
+            val signedJwtJson = jwtProvider.dpopProofWithTokenInfo(uri, Get, accessToken)
 
             val signedJwt = SignedJWT.parse(signedJwtJson)
-            signedJwt.verify(RSASSAVerifier(rsaJwk.toRSAPublicKey())) shouldBe true
+            signedJwt.verify(RSASSAVerifier(jwtProvider.rsaKey())) shouldBe true
 
             val claims = signedJwt.jwtClaimsSet
             claims.getStringClaim("htm") shouldBe Get.value
             claims.getStringClaim("htu") shouldBe uri.toString()
-            claims.getStringClaim("ath") shouldBe accessTokenHash(accessToken.value)
+            claims.getStringClaim("ath") shouldBe jwtProvider.accessTokenHash(accessToken.value)
             claims.getStringClaim("jti") shouldNotBe null
             claims.getDateClaim("iat") shouldNotBe null
         }
 
         "should generate a valid signed JWT client assertion" {
-            val config = config().azureAuth
-            val assertion = clientAssertion(config)
+            val assertion = jwtProvider.clientAssertion()
 
             val decoded = JWT.decode(assertion)
 
-            val verification = JWT.require(RSA256(rsaJwk.toRSAPublicKey(), null))
-                .withIssuer(config.clientId.value)
-                .withSubject(config.clientId.value)
-                .withAudience(config.audience.value)
+            val verification = JWT.require(RSA256(jwtProvider.rsaKey().toRSAPublicKey(), null))
+                .withIssuer(config().azureAuth.clientId.value)
+                .withSubject(config().azureAuth.clientId.value)
+                .withAudience(config().azureAuth.audience.value)
                 .build()
 
             verification.verify(assertion)
 
-            decoded.issuer shouldBe config.clientId.value
-            decoded.subject shouldBe config.clientId.value
-            decoded.audience shouldContain config.audience.value
+            decoded.issuer shouldBe config().azureAuth.clientId.value
+            decoded.subject shouldBe config().azureAuth.clientId.value
+            decoded.audience shouldContain config().azureAuth.audience.value
             decoded.getClaim("jti").asString() shouldNotBe null
 
             val headerJson = String(getUrlDecoder().decode(decoded.header))
-            headerJson shouldContain "\"kid\":\"${config.keyId.value}\""
+            headerJson shouldContain "\"kid\":\"${config().azureAuth.keyId.value}\""
             headerJson shouldContain "\"alg\":\"RS256\""
             headerJson shouldContain "\"typ\":\"client-authentication+jwt\""
         }
