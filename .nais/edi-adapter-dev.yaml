@@ -74,7 +74,7 @@ spec:
     - name: NHN_BASE_URL
       value: "https://api.tjener.test.melding.nhn.no"
     - name: NHN_KEYPAIR_PATH
-      value: "/var/run/secrets/emottak-nhn-edi/keypair-jwk"
+      value: "/var/run/secrets/nais.io/emottak-nhn-edi/keypair-jwk"
     - name: NHN_TOKEN_ENDPOINT
       value: "https://helseid-sts.test.nhn.no/connect/token"
     - name: NHN_CLIENT_KEY_ID
