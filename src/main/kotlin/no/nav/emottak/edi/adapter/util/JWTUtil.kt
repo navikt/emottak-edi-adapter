@@ -119,9 +119,9 @@ private fun publicRSAKey(): RSAKey =
         .algorithm(RS256)
         .build()
 
-internal fun parsePair(keypairPath: String): JSONObject =
+internal fun parsePair(keyPairPath: String): JSONObject =
     JSONParser(MODE_PERMISSIVE)
-        .parse(File(keypairPath).readText()) as JSONObject
+        .parse(File(keyPairPath).readText()) as JSONObject
 
 internal fun accessTokenHash(accessToken: String): String =
     getUrlEncoder()
