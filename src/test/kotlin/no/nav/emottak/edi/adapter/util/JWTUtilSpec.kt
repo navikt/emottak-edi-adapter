@@ -3,11 +3,11 @@ package no.nav.emottak.edi.adapter.util
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm.RSA256
 import com.nimbusds.jose.crypto.RSASSAVerifier
+import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.oauth2.sdk.token.DPoPAccessToken
 import com.nimbusds.openid.connect.sdk.Nonce
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.extensions.system.withEnvironment
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -15,71 +15,61 @@ import io.kotest.matchers.string.shouldContain
 import io.ktor.http.HttpMethod.Companion.Get
 import io.ktor.http.HttpMethod.Companion.Post
 import no.nav.emottak.config
-import no.nav.emottak.generateRsaJwk
 import java.net.URI
 import java.util.Base64.getUrlDecoder
 import kotlin.uuid.Uuid
 
 class JWTUtilSpec : StringSpec(
     {
-        val rsaJwk = generateRsaJwk()
-        val rsaJwkJson = rsaJwk.toString()
+        val rsaJwk = RSAKey.parse(parsePair(config().nhn.keyPairPath.value))
 
         "should generate valid DPoP proof and required claims without nonce" {
-            withEnvironment("emottak-nhn-edi", rsaJwkJson) {
-                val config = config()
+            val config = config()
 
-                println("KEY from env: ${config.nhn.keyPair.value}")
+            val signedJwtJson = dpopProofWithoutNonce()
 
-                val signedJwtJson = dpopProofWithoutNonce()
+            val signedJwt = SignedJWT.parse(signedJwtJson)
+            signedJwt.verify(RSASSAVerifier(rsaJwk.toRSAPublicKey())) shouldBe true
 
-                val signedJwt = SignedJWT.parse(signedJwtJson)
-                signedJwt.verify(RSASSAVerifier(rsaJwk.toRSAPublicKey())) shouldBe true
-
-                val claims = signedJwt.jwtClaimsSet
-                claims.getStringClaim("htm") shouldBe "POST"
-                claims.getStringClaim("htu") shouldBe config.azureAuth.tokenEndpoint.toString()
-                claims.getStringClaim("jti") shouldNotBe null
-                claims.getDateClaim("iat") shouldNotBe null
-            }
+            val claims = signedJwt.jwtClaimsSet
+            claims.getStringClaim("htm") shouldBe "POST"
+            claims.getStringClaim("htu") shouldBe config.azureAuth.tokenEndpoint.toString()
+            claims.getStringClaim("jti") shouldNotBe null
+            claims.getDateClaim("iat") shouldNotBe null
         }
 
         "should generate valid DPoP proof and required claims with nonce" {
-            withEnvironment("emottak-nhn-edi", rsaJwkJson) {
-                val config = config().azureAuth
+            val config = config().azureAuth
 
-                val random = Uuid.random()
-                val signedJwtJson = dpopProofWithNonce(Nonce(random.toString()))
+            val random = Uuid.random()
+            val signedJwtJson = dpopProofWithNonce(Nonce(random.toString()))
 
-                val signedJwt = SignedJWT.parse(signedJwtJson)
-                signedJwt.verify(RSASSAVerifier(rsaJwk.toRSAPublicKey())) shouldBe true
+            val signedJwt = SignedJWT.parse(signedJwtJson)
+            signedJwt.verify(RSASSAVerifier(rsaJwk.toRSAPublicKey())) shouldBe true
 
-                val claims = signedJwt.jwtClaimsSet
-                claims.getStringClaim("htm") shouldBe Post.value
-                claims.getStringClaim("htu") shouldBe config.tokenEndpoint.toString()
-                claims.getStringClaim("nonce") shouldBe random.toString()
-                claims.getStringClaim("jti") shouldNotBe null
-                claims.getDateClaim("iat") shouldNotBe null
-            }
+            val claims = signedJwt.jwtClaimsSet
+            claims.getStringClaim("htm") shouldBe Post.value
+            claims.getStringClaim("htu") shouldBe config.tokenEndpoint.toString()
+            claims.getStringClaim("nonce") shouldBe random.toString()
+            claims.getStringClaim("jti") shouldNotBe null
+            claims.getDateClaim("iat") shouldNotBe null
         }
 
         "should generate valid DPoP proof and required claims with access token" {
-            withEnvironment("emottak-nhn-edi", rsaJwkJson) {
-                val uri = URI("https://my.uri.com")
-                val accessToken = DPoPAccessToken("my access token")
+            val uri = URI("https://my.uri.com")
+            val accessToken = DPoPAccessToken("my access token")
 
-                val signedJwtJson = dpopProofWithTokenInfo(uri, Get, accessToken)
+            val signedJwtJson = dpopProofWithTokenInfo(uri, Get, accessToken)
 
-                val signedJwt = SignedJWT.parse(signedJwtJson)
-                signedJwt.verify(RSASSAVerifier(rsaJwk.toRSAPublicKey())) shouldBe true
+            val signedJwt = SignedJWT.parse(signedJwtJson)
+            signedJwt.verify(RSASSAVerifier(rsaJwk.toRSAPublicKey())) shouldBe true
 
-                val claims = signedJwt.jwtClaimsSet
-                claims.getStringClaim("htm") shouldBe Get.value
-                claims.getStringClaim("htu") shouldBe uri.toString()
-                claims.getStringClaim("ath") shouldBe accessTokenHash(accessToken.value)
-                claims.getStringClaim("jti") shouldNotBe null
-                claims.getDateClaim("iat") shouldNotBe null
-            }
+            val claims = signedJwt.jwtClaimsSet
+            claims.getStringClaim("htm") shouldBe Get.value
+            claims.getStringClaim("htu") shouldBe uri.toString()
+            claims.getStringClaim("ath") shouldBe accessTokenHash(accessToken.value)
+            claims.getStringClaim("jti") shouldNotBe null
+            claims.getDateClaim("iat") shouldNotBe null
         }
 
         "should generate a valid signed JWT client assertion" {

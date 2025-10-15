@@ -54,8 +54,9 @@ spec:
       memory: "512Mi"
   ingresses:
     - "https://edi-transport.intern.dev.nav.no"
-  envFrom:
+  filesFrom:
     - secret: emottak-nhn-edi
+      mountPath: /var/run/secrets/emottak-nhn-edi
   vault:
     enabled: true
     paths:
@@ -72,6 +73,8 @@ spec:
   env:
     - name: NHN_BASE_URL
       value: "https://api.tjener.test.melding.nhn.no"
+    - name: NHN_KEYPAIR_PATH
+      value: "/var/run/secrets/emottak-nhn-edi/keypair-jwk.json"
     - name: NHN_TOKEN_ENDPOINT
       value: "https://helseid-sts.test.nhn.no/connect/token"
     - name: NHN_CLIENT_KEY_ID

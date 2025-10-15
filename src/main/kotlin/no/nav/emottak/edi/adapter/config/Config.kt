@@ -14,13 +14,13 @@ data class Config(
 data class Nhn(
     val baseUrl: URI,
     val apiUri: ApiUri,
-    val keyPair: KeyPair
+    val keyPairPath: KeyPairPath
 ) {
     @JvmInline
     value class ApiUri(val value: String)
 
     @JvmInline
-    value class KeyPair(val value: String)
+    value class KeyPairPath(val value: String)
 }
 
 data class AzureAuth(
