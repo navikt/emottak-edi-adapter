@@ -21,7 +21,6 @@ import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import kotlin.math.log
 import no.nav.emottak.MessageError
 import no.nav.emottak.edi.adapter.model.AppRec
 import no.nav.emottak.edi.adapter.model.Message
@@ -30,6 +29,7 @@ import no.nav.emottak.messageId
 import no.nav.emottak.messageIds
 import no.nav.emottak.senderHerId
 import no.nav.emottak.toContent
+import kotlin.math.log
 
 private const val RECEIVER_HER_IDS = "ReceiverHerIds"
 
