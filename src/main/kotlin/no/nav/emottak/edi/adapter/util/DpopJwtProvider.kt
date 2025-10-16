@@ -1,6 +1,5 @@
 package no.nav.emottak.edi.adapter.util
 
-import arrow.core.memoize
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.nimbusds.jose.JWSAlgorithm.RS256
@@ -132,13 +131,11 @@ class DpopJwtProvider(
             .algorithm(RS256)
             .build()
 
-    internal val parseKeyPair = { keyPairPath: String ->
+    internal fun parseKeyPair(keyPairPath: String): RSAKey =
         RSAKey.parse(
             JSONParser(MODE_PERMISSIVE)
                 .parse(File(keyPairPath).readText()) as JSONObject
         )
-    }
-        .memoize()
 
     internal fun accessTokenHash(accessToken: String): String =
         getUrlEncoder()
