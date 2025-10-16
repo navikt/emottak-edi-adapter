@@ -24,14 +24,8 @@ class DpopTokenUtil(
     private val httpTokenClient: HttpClient
 ) {
     suspend fun obtainDpopTokens(): DpopTokens {
-        val clientAssertion = jwtProvider.clientAssertion()
-
         val proofWithoutNonce = jwtProvider.dpopProofWithoutNonce()
-        val tokenResponseWithoutNonce = tokenRequest(
-            httpTokenClient,
-            clientAssertion,
-            proofWithoutNonce
-        )
+        val tokenResponseWithoutNonce = tokenRequest(proofWithoutNonce)
 
         val response = when (tokenResponseWithoutNonce.status.value) {
             400 -> {
@@ -39,7 +33,7 @@ class DpopTokenUtil(
                     ?: error("DPoP-Nonce header missing")
 
                 val proofWithNonce = jwtProvider.dpopProofWithNonce(Nonce(nonceHeader))
-                tokenRequest(httpTokenClient, clientAssertion, proofWithNonce)
+                tokenRequest(proofWithNonce)
             }
 
             else -> tokenResponseWithoutNonce
@@ -53,20 +47,16 @@ class DpopTokenUtil(
         return tokenInfo.toDpopTokens()
     }
 
-    private suspend fun tokenRequest(
-        httpClient: HttpClient,
-        clientAssertion: String,
-        dpopJwt: String
-    ): HttpResponse =
-        httpClient.post(config.azureAuth.tokenEndpoint.toString()) {
-            header(DPOP.value, dpopJwt)
+    private suspend fun tokenRequest(dpopProofWithNonce: String): HttpResponse =
+        httpTokenClient.post(config.azureAuth.tokenEndpoint.toString()) {
+            header(DPOP.value, dpopProofWithNonce)
             contentType(FormUrlEncoded)
             setBody(
                 Parameters.build {
                     append("client_id", config.azureAuth.clientId.value)
                     append("grant_type", config.azureAuth.grantType.value)
                     append("scope", config.azureAuth.scope.value)
-                    append("client_assertion", clientAssertion)
+                    append("client_assertion", jwtProvider.clientAssertion())
                     append("client_assertion_type", config.azureAuth.clientAssertionType.value)
                 }
                     .formUrlEncode()
