@@ -83,7 +83,7 @@ suspend fun ResourceScope.dependencies(): Dependencies = awaitAll {
     val httpTokenClient = async { httpTokenClient(config, httpTokenClientEngine.await()) }.await()
     val httpClientEngine = async { httpClientEngine() }.await()
 
-    val dpopJwtProvider = DpopJwtProvider(config())
+    val dpopJwtProvider = DpopJwtProvider(config)
     val dpopTokenUtil = DpopTokenUtil(config, dpopJwtProvider, httpTokenClient)
 
     val httpClient = async { httpClient(config, dpopJwtProvider, dpopTokenUtil, httpClientEngine) }
