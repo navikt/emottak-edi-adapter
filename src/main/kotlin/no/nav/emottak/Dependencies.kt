@@ -75,22 +75,21 @@ private fun httpClient(
     }
 }
 
-suspend fun ResourceScope.dependencies(): Dependencies =
-    awaitAll {
-        val config = config()
+suspend fun ResourceScope.dependencies(): Dependencies = awaitAll {
+    val config = config()
 
-        val metricsRegistry = async { metricsRegistry() }
-        val httpTokenClientEngine = async { httpTokenClientEngine() }
-        val httpTokenClient = async { httpTokenClient(config, httpTokenClientEngine.await()) }.await()
-        val httpClientEngine = async { httpClientEngine() }.await()
+    val metricsRegistry = async { metricsRegistry() }
+    val httpTokenClientEngine = async { httpTokenClientEngine() }
+    val httpTokenClient = async { httpTokenClient(config, httpTokenClientEngine.await()) }.await()
+    val httpClientEngine = async { httpClientEngine() }.await()
 
-        val dpopJwtProvider = DpopJwtProvider(config())
-        val dpopTokenUtil = DpopTokenUtil(config, dpopJwtProvider, httpTokenClient)
+    val dpopJwtProvider = DpopJwtProvider(config())
+    val dpopTokenUtil = DpopTokenUtil(config, dpopJwtProvider, httpTokenClient)
 
-        val httpClient = async { httpClient(config, dpopJwtProvider, dpopTokenUtil, httpClientEngine) }
+    val httpClient = async { httpClient(config, dpopJwtProvider, dpopTokenUtil, httpClientEngine) }
 
-        Dependencies(
-            httpClient.await(),
-            metricsRegistry.await()
-        )
-    }
+    Dependencies(
+        httpClient.await(),
+        metricsRegistry.await()
+    )
+}
