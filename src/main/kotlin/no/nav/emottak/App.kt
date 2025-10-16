@@ -14,7 +14,6 @@ import no.nav.emottak.edi.adapter.plugin.configureCallLogging
 import no.nav.emottak.edi.adapter.plugin.configureContentNegotiation
 import no.nav.emottak.edi.adapter.plugin.configureMetrics
 import no.nav.emottak.edi.adapter.plugin.configureRoutes
-import no.nav.emottak.edi.adapter.util.DpopJwtProvider
 import org.slf4j.LoggerFactory
 
 internal val log = LoggerFactory.getLogger("no.nav.emottak.edi.adapter")
@@ -22,8 +21,7 @@ internal val log = LoggerFactory.getLogger("no.nav.emottak.edi.adapter")
 fun main() = SuspendApp {
     result {
         resourceScope {
-            val dpopJwtProvider = DpopJwtProvider(config())
-            val deps = dependencies(dpopJwtProvider)
+            val deps = dependencies()
 
             server(
                 Netty,

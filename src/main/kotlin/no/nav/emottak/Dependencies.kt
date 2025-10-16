@@ -52,15 +52,9 @@ private const val NHN_SOURCE_SYSTEM = "nhn-source-system"
 private fun httpClient(
     config: Config,
     jwtProvider: DpopJwtProvider,
-    clientEngine: HttpClientEngine,
-    httpTokenClient: HttpClient
+    dpopTokenUtil: DpopTokenUtil,
+    clientEngine: HttpClientEngine
 ): HttpClient = HttpClient(clientEngine) {
-    val dpopTokenUtil = DpopTokenUtil(
-        config,
-        jwtProvider,
-        httpTokenClient
-    )
-
     install(HttpTimeout) {
         connectTimeoutMillis = config.httpClient.connectionTimeout.value
     }
@@ -81,14 +75,19 @@ private fun httpClient(
     }
 }
 
-suspend fun ResourceScope.dependencies(dpopJwtProvider: DpopJwtProvider): Dependencies =
+suspend fun ResourceScope.dependencies(): Dependencies =
     awaitAll {
         val config = config()
+
         val metricsRegistry = async { metricsRegistry() }
         val httpTokenClientEngine = async { httpTokenClientEngine() }
         val httpTokenClient = async { httpTokenClient(config, httpTokenClientEngine.await()) }.await()
         val httpClientEngine = async { httpClientEngine() }.await()
-        val httpClient = async { httpClient(config, dpopJwtProvider, httpClientEngine, httpTokenClient) }
+
+        val dpopJwtProvider = DpopJwtProvider(config())
+        val dpopTokenUtil = DpopTokenUtil(config, dpopJwtProvider, httpTokenClient)
+
+        val httpClient = async { httpClient(config, dpopJwtProvider, dpopTokenUtil, httpClientEngine) }
 
         Dependencies(
             httpClient.await(),
