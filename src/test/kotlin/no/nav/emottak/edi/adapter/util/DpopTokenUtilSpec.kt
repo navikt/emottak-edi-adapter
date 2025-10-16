@@ -46,7 +46,6 @@ class DpopTokenUtilSpec : StringSpec(
         }
 
         "should retry with nonce if first call returns 400" {
-            val config = config()
             var callCount = 0
             val engine = MockEngine { _ ->
                 callCount++
