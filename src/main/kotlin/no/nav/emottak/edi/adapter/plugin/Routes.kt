@@ -21,6 +21,7 @@ import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import kotlin.math.log
 import no.nav.emottak.MessageError
 import no.nav.emottak.edi.adapter.model.AppRec
 import no.nav.emottak.edi.adapter.model.Message
@@ -61,6 +62,7 @@ fun Route.internalRoutes(registry: PrometheusMeterRegistry) {
 fun Route.externalRoutes(ediClient: HttpClient) {
     route("/api/v1") {
         get("/messages") {
+            no.nav.emottak.log.info("EDI2 test: Request received for GET /messages")
             recover({
                 val messageIds = messageIds(call)
                 val params = parametersOf(RECEIVER_HER_IDS to messageIds)
@@ -69,6 +71,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
         get("/messages/{messageId}") {
+            no.nav.emottak.log.info("EDI2 test: Request received for GET /messages/{messageId}")
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId")
@@ -77,6 +80,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
         }
 
         get("/messages/{messageId}/document") {
+            no.nav.emottak.log.info("EDI2 test: Request received for GET /messages/{messageId}/document")
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/business-document")
@@ -85,6 +89,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
         }
 
         get("/messages/{messageId}/status") {
+            no.nav.emottak.log.info("EDI2 test: Request received for GET /messages/{messageId}/status")
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/status")
@@ -92,6 +97,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
         get("/messages/{messageId}/apprec") {
+            no.nav.emottak.log.info("EDI2 test: Request received for GET /messages/{messageId}/apprec")
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/apprec")
@@ -99,6 +105,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
         post("/messages") {
+            no.nav.emottak.log.info("EDI2 test: Request received for POST /messages")
             val message = call.receive<Message>()
             val response = ediClient.post("Messages") {
                 contentType(Json)
@@ -108,6 +115,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
         }
 
         post("/messages/{messageId}/apprec/{apprecSenderHerId}") {
+            no.nav.emottak.log.info("EDI2 test: Request received for POST /messages/{messageId}/apprec/{apprecSenderHerId}")
             recover({
                 val messageId = messageId(call)
                 val senderHerId = senderHerId(call)
@@ -122,6 +130,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
         }
 
         put("/messages/{messageId}/read/{herId}") {
+            no.nav.emottak.log.info("EDI2 test: Request received for PUT /messages/{messageId}/read/{herId}")
             recover({
                 val messageId = messageId(call)
                 val herId = herId(call)
