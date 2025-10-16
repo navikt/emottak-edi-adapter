@@ -64,7 +64,9 @@ spec:
         mountPath: /secret/serviceuser
   accessPolicy:
     outbound:
-      rules:
+      external:
+        - host: helseid-sts.test.nhn.no
+        - host: api.tjener.test.melding.nhn.no
     inbound:
       rules:
         - application: azure-token-generator
