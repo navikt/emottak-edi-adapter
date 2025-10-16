@@ -19,7 +19,8 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.serialization.json.Json
 import no.nav.emottak.edi.adapter.config.Config
 import no.nav.emottak.edi.adapter.plugin.DpopAuth
-import no.nav.emottak.edi.adapter.util.obtainDpopTokens
+import no.nav.emottak.edi.adapter.util.DpopJwtProvider
+import no.nav.emottak.edi.adapter.util.DpopTokenUtil
 
 data class Dependencies(
     val httpClient: HttpClient,
@@ -50,8 +51,9 @@ private const val NHN_SOURCE_SYSTEM = "nhn-source-system"
 
 private fun httpClient(
     config: Config,
-    clientEngine: HttpClientEngine,
-    httpTokenClient: HttpClient
+    jwtProvider: DpopJwtProvider,
+    dpopTokenUtil: DpopTokenUtil,
+    clientEngine: HttpClientEngine
 ): HttpClient = HttpClient(clientEngine) {
     install(HttpTimeout) {
         connectTimeoutMillis = config.httpClient.connectionTimeout.value
@@ -59,8 +61,8 @@ private fun httpClient(
     install(Logging) { level = LogLevel.INFO }
     install(ContentNegotiation) { json() }
     install(DpopAuth) {
-        azureAuth = config.azureAuth
-        loadTokens = { obtainDpopTokens(config.azureAuth, httpTokenClient) }
+        dpopJwtProvider = jwtProvider
+        loadTokens = { dpopTokenUtil.obtainDpopTokens() }
     }
     defaultRequest {
         url(config.nhn.baseUrl.toString())
@@ -80,7 +82,11 @@ suspend fun ResourceScope.dependencies(): Dependencies = awaitAll {
     val httpTokenClientEngine = async { httpTokenClientEngine() }
     val httpTokenClient = async { httpTokenClient(config, httpTokenClientEngine.await()) }.await()
     val httpClientEngine = async { httpClientEngine() }.await()
-    val httpClient = async { httpClient(config, httpClientEngine, httpTokenClient) }
+
+    val dpopJwtProvider = DpopJwtProvider(config)
+    val dpopTokenUtil = DpopTokenUtil(config, dpopJwtProvider, httpTokenClient)
+
+    val httpClient = async { httpClient(config, dpopJwtProvider, dpopTokenUtil, httpClientEngine) }
 
     Dependencies(
         httpClient.await(),

@@ -13,62 +13,53 @@ import io.ktor.http.ContentType.Application.FormUrlEncoded
 import io.ktor.http.Parameters
 import io.ktor.http.contentType
 import io.ktor.http.formUrlEncode
-import no.nav.emottak.edi.adapter.config.AzureAuth
+import no.nav.emottak.edi.adapter.config.Config
 import no.nav.emottak.edi.adapter.model.DpopTokens
 import no.nav.emottak.edi.adapter.model.TokenInfo
 import no.nav.emottak.edi.adapter.model.toDpopTokens
 
-suspend fun obtainDpopTokens(
-    config: AzureAuth,
-    httpTokenClient: HttpClient
-): DpopTokens {
-    val clientAssertion = clientAssertion(config)
+class DpopTokenUtil(
+    private val config: Config,
+    private val jwtProvider: DpopJwtProvider,
+    private val httpTokenClient: HttpClient
+) {
+    suspend fun obtainDpopTokens(): DpopTokens {
+        val proofWithoutNonce = jwtProvider.dpopProofWithoutNonce()
+        val tokenResponseWithoutNonce = tokenRequest(proofWithoutNonce)
 
-    val proofWithoutNonce = dpopProofWithoutNonce()
-    val tokenResponseWithoutNonce = tokenRequest(
-        config,
-        httpTokenClient,
-        clientAssertion,
-        proofWithoutNonce
-    )
+        val response = when (tokenResponseWithoutNonce.status.value) {
+            400 -> {
+                val nonceHeader = tokenResponseWithoutNonce.headers["DPoP-Nonce"]
+                    ?: error("DPoP-Nonce header missing")
 
-    val response = when (tokenResponseWithoutNonce.status.value) {
-        400 -> {
-            val nonceHeader = tokenResponseWithoutNonce.headers["DPoP-Nonce"]
-                ?: error("DPoP-Nonce header missing")
+                val proofWithNonce = jwtProvider.dpopProofWithNonce(Nonce(nonceHeader))
+                tokenRequest(proofWithNonce)
+            }
 
-            val proofWithNonce = dpopProofWithNonce(Nonce(nonceHeader))
-            tokenRequest(config, httpTokenClient, clientAssertion, proofWithNonce)
+            else -> tokenResponseWithoutNonce
         }
 
-        else -> tokenResponseWithoutNonce
+        if (response.status.value != 200) {
+            error("Failed to obtain DPoP token: ${response.status} - ${response.bodyAsText()}")
+        }
+
+        val tokenInfo: TokenInfo = response.body()
+        return tokenInfo.toDpopTokens()
     }
 
-    if (response.status.value != 200) {
-        error("Failed to obtain DPoP token: ${response.status} - ${response.bodyAsText()}")
-    }
-
-    val tokenInfo: TokenInfo = response.body()
-    return tokenInfo.toDpopTokens()
+    private suspend fun tokenRequest(dpopProofWithNonce: String): HttpResponse =
+        httpTokenClient.post(config.azureAuth.tokenEndpoint.toString()) {
+            header(DPOP.value, dpopProofWithNonce)
+            contentType(FormUrlEncoded)
+            setBody(
+                Parameters.build {
+                    append("client_id", config.azureAuth.clientId.value)
+                    append("grant_type", config.azureAuth.grantType.value)
+                    append("scope", config.azureAuth.scope.value)
+                    append("client_assertion", jwtProvider.clientAssertion())
+                    append("client_assertion_type", config.azureAuth.clientAssertionType.value)
+                }
+                    .formUrlEncode()
+            )
+        }
 }
-
-private suspend fun tokenRequest(
-    config: AzureAuth,
-    httpClient: HttpClient,
-    clientAssertion: String,
-    dpopJwt: String
-): HttpResponse =
-    httpClient.post(config.tokenEndpoint.toString()) {
-        header(DPOP.value, dpopJwt)
-        contentType(FormUrlEncoded)
-        setBody(
-            Parameters.build {
-                append("client_id", config.clientId.value)
-                append("grant_type", config.grantType.value)
-                append("scope", config.scope.value)
-                append("client_assertion", clientAssertion)
-                append("client_assertion_type", config.clientAssertionType.value)
-            }
-                .formUrlEncode()
-        )
-    }

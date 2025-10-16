@@ -20,8 +20,6 @@ import no.nav.emottak.config
 class DpopTokenUtilSpec : StringSpec(
     {
         "should return tokens immediately if first call is 200" {
-            val config = config().azureAuth
-
             val engine = MockEngine { _ ->
                 respond(
                     content = """{
@@ -40,14 +38,14 @@ class DpopTokenUtilSpec : StringSpec(
                 }
             }
 
-            val tokens = obtainDpopTokens(config, client)
+            val tokenUtil = dpopTokenUtil(client)
+            val tokens = tokenUtil.obtainDpopTokens()
 
             tokens.accessToken.value shouldBe "token-abc"
             tokens.accessToken.type.value shouldBe "DPoP"
         }
 
         "should retry with nonce if first call returns 400" {
-            val config = config().azureAuth
             var callCount = 0
             val engine = MockEngine { _ ->
                 callCount++
@@ -75,14 +73,13 @@ class DpopTokenUtilSpec : StringSpec(
                     json(Json { ignoreUnknownKeys = true })
                 }
             }
-            val tokens = obtainDpopTokens(config, client)
+            val tokenUtil = dpopTokenUtil(client)
+            val tokens = tokenUtil.obtainDpopTokens()
 
             tokens.accessToken.value shouldBe "token-retried"
         }
 
         "should throw if final response is not 200" {
-            val config = config().azureAuth
-
             val engine = MockEngine { _ ->
                 respond(
                     content = """{"error":"unauthorized"}""",
@@ -92,9 +89,17 @@ class DpopTokenUtilSpec : StringSpec(
 
             val client = HttpClient(engine)
             shouldThrow<IllegalStateException> {
-                runBlocking { obtainDpopTokens(config, client) }
+                val tokenUtil = dpopTokenUtil(client)
+                runBlocking { tokenUtil.obtainDpopTokens() }
             }
                 .message shouldBe "Failed to obtain DPoP token: 401 Unauthorized - {\"error\":\"unauthorized\"}"
         }
     }
 )
+
+private fun dpopTokenUtil(client: HttpClient): DpopTokenUtil =
+    DpopTokenUtil(
+        config(),
+        DpopJwtProvider(config()),
+        client
+    )

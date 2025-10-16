@@ -16,6 +16,7 @@ import io.ktor.http.headersOf
 import kotlinx.datetime.Clock
 import no.nav.emottak.config
 import no.nav.emottak.edi.adapter.model.DpopTokens
+import no.nav.emottak.edi.adapter.util.DpopJwtProvider
 import kotlin.time.Duration.Companion.seconds
 
 class DpopAuthSpec : StringSpec(
@@ -47,7 +48,7 @@ class DpopAuthSpec : StringSpec(
 
             val client = HttpClient(mockEngine) {
                 install(DpopAuth) {
-                    azureAuth = config().azureAuth
+                    dpopJwtProvider = DpopJwtProvider(config())
                     loadTokens = { dummyTokens }
                 }
             }

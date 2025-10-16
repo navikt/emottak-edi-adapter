@@ -3,15 +3,15 @@ package no.nav.emottak.edi.adapter.plugin
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.http.URLBuilder
-import no.nav.emottak.edi.adapter.config.AzureAuth
 import no.nav.emottak.edi.adapter.model.DpopTokens
-import no.nav.emottak.edi.adapter.util.dpopProofWithTokenInfo
+import no.nav.emottak.edi.adapter.util.DpopJwtProvider
 import java.net.URI
 
 private const val QUERY_PARAMETERS = "?"
 
 val DpopAuth = createClientPlugin("DpopAuth", ::DpopAuthConfig) {
     val config = pluginConfig
+    val jwtProvider = config.dpopJwtProvider!!
 
     onRequest { request, _ ->
         if (config.tokens == null || config.tokens!!.isExpired()) {
@@ -20,7 +20,7 @@ val DpopAuth = createClientPlugin("DpopAuth", ::DpopAuthConfig) {
 
         val dpopTokens = config.tokens!!
 
-        val proof = dpopProofWithTokenInfo(
+        val proof = jwtProvider.dpopProofWithTokenInfo(
             urlWithPath(request.url),
             request.method,
             dpopTokens.accessToken
@@ -33,7 +33,7 @@ val DpopAuth = createClientPlugin("DpopAuth", ::DpopAuthConfig) {
 }
 
 class DpopAuthConfig {
-    var azureAuth: AzureAuth? = null
+    var dpopJwtProvider: DpopJwtProvider? = null
     var loadTokens: (suspend () -> DpopTokens)? = null
     var tokens: DpopTokens? = null
 }
