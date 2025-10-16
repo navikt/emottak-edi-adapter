@@ -131,14 +131,6 @@ class DpopJwtProvider(
             .algorithm(RS256)
             .build()
 
-    internal fun parseKeyPair(keyPairPath: String): RSAKey {
-        val jsonText = File(keyPairPath).readText()
-        println("🔍 Parsing key from: $keyPairPath")
-        println("🔍 Key file content (first 200 chars): ${jsonText.take(200)}")
-
-        return RSAKey.parse(JSONParser(MODE_PERMISSIVE).parse(jsonText) as JSONObject)
-    }
-
     internal fun accessTokenHash(accessToken: String): String =
         getUrlEncoder()
             .withoutPadding()
@@ -146,6 +138,12 @@ class DpopJwtProvider(
                 getInstance("SHA-256")
                     .digest(accessToken.toByteArray())
             )
+
+    private fun parseKeyPair(keyPairPath: String): RSAKey =
+        RSAKey.parse(
+            JSONParser(MODE_PERMISSIVE)
+                .parse(File(keyPairPath).readText()) as JSONObject
+        )
 
     private fun Builder.htm(method: HttpMethod) =
         claim(HTM_CLAIM_NAME, method.value)

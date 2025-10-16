@@ -21,7 +21,6 @@ import no.nav.emottak.edi.adapter.config.Config
 import no.nav.emottak.edi.adapter.plugin.DpopAuth
 import no.nav.emottak.edi.adapter.util.DpopJwtProvider
 import no.nav.emottak.edi.adapter.util.DpopTokenUtil
-import java.io.File
 
 data class Dependencies(
     val httpClient: HttpClient,
@@ -78,9 +77,6 @@ private fun httpClient(
 
 suspend fun ResourceScope.dependencies(): Dependencies = awaitAll {
     val config = config()
-    println("CONFIG keyPairPath: ${config.nhn.keyPairPath.value}")
-    println("FILE EXISTS? ${File(config.nhn.keyPairPath.value).exists()}")
-    println("ENV NHN_KEYPAIR_PATH: ${System.getenv("NHN_KEYPAIR_PATH")}")
 
     val metricsRegistry = async { metricsRegistry() }
     val httpTokenClientEngine = async { httpTokenClientEngine() }
