@@ -1,7 +1,7 @@
 # emottak-edi-adapter
 
-Meldingstjener Adapter is an wrapper around the external NHN Meldingstjener API (EDI 2.0).
-Provides a stable internal interface under `/api/v1/*` so the rest of the system remains unaffected by external API
+The adapter is an [anti corruption layer (ACL)](https://ddd-practitioners.com/home/glossary/bounded-context/bounded-context-relationship/anticorruption-layer/) between the external NHN Meldingstjener API (EDI 2.0) and our internal sevices.
+This provides a stable internal interface under `/api/v1/*` so the rest of the ecosystem remains unaffected by external API
 changes.
 
 **Key Takeaways:**
