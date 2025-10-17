@@ -54,3 +54,20 @@ The adapter wraps the NHN Meldingstjener API (EDI 2.0).
 Official documentation and endpoint definitions are available at:
 
 [utviklerportal.nhn.no - meldingstjener-api-test-internett](https://utviklerportal.nhn.no/informasjonstjenester/meldingstjener/edi-20/edi-20-ekstern-docs/openapi/meldingstjener-api-test-internett)
+
+## Local development
+
+Spinning up the adapter locally is a simple task which just involves a couple of small steps:
+
+1. Login to the [NAIS Console](https://console.nav.cloud.nais.io)
+2. Localize the *emottak-nhn-edi* secret and copy the *keypair-jwk* value
+3. Paste the value from the previous step into the `src/test/resources/keypair-jwk.json` file
+4. Run the adapter. In most IDE's this involves clicking on the `App` file and run it
+
+When the server is running its `curl`able with ie: `curl http://localhost:8080/api/v1/messages/{messageId}/apprec`.
+The adapter is then **POST**'ing and **GET**'ing data to and from the NHN test environment in the background.
+
+**NOTE:** This implies that the `NHN_KEYPAIR_PATH` envionment variable hasn't been set locally (this is only used by NAIS). 
+*Hoplite* defaults to the *test* file mentioned above as can be seen in the `application.conf` file.
+
+
