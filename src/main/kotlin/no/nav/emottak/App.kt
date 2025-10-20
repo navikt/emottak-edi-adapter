@@ -4,6 +4,7 @@ import arrow.continuations.SuspendApp
 import arrow.continuations.ktor.server
 import arrow.core.raise.result
 import arrow.fx.coroutines.resourceScope
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.server.application.Application
 import io.ktor.server.netty.Netty
@@ -14,9 +15,8 @@ import no.nav.emottak.edi.adapter.plugin.configureCallLogging
 import no.nav.emottak.edi.adapter.plugin.configureContentNegotiation
 import no.nav.emottak.edi.adapter.plugin.configureMetrics
 import no.nav.emottak.edi.adapter.plugin.configureRoutes
-import org.slf4j.LoggerFactory
 
-internal val log = LoggerFactory.getLogger("no.nav.emottak.edi.adapter")
+private val log = KotlinLogging.logger {}
 
 fun main() = SuspendApp {
     result {
@@ -48,4 +48,4 @@ internal fun ediAdapterModule(
     }
 }
 
-private fun logError(t: Throwable) = log.error("Shutdown edi-adapter due to: ${t.stackTraceToString()}")
+private fun logError(t: Throwable) = log.error { "Shutdown edi-adapter due to: ${t.stackTraceToString()}" }

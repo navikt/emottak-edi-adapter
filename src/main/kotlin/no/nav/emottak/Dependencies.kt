@@ -3,6 +3,7 @@ package no.nav.emottak
 import arrow.fx.coroutines.ExitCase
 import arrow.fx.coroutines.ResourceScope
 import arrow.fx.coroutines.await.awaitAll
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
@@ -21,6 +22,8 @@ import no.nav.emottak.edi.adapter.plugin.DpopAuth
 import no.nav.emottak.edi.adapter.util.DpopJwtProvider
 import no.nav.emottak.edi.adapter.util.DpopTokenUtil
 
+private val log = KotlinLogging.logger {}
+
 data class Dependencies(
     val httpClient: HttpClient,
     val meterRegistry: PrometheusMeterRegistry
@@ -28,14 +31,14 @@ data class Dependencies(
 
 internal suspend fun ResourceScope.metricsRegistry(): PrometheusMeterRegistry =
     install({ PrometheusMeterRegistry(DEFAULT) }) { p, _: ExitCase ->
-        p.close().also { log.info("Closed prometheus registry") }
+        p.close().also { log.info { "Closed prometheus registry" } }
     }
 
 internal suspend fun ResourceScope.httpClientEngine(): HttpClientEngine =
-    install({ CIO.create() }) { e, _: ExitCase -> e.close().also { log.info("Closed http client engine") } }
+    install({ CIO.create() }) { e, _: ExitCase -> e.close().also { log.info { "Closed http client engine" } } }
 
 internal suspend fun ResourceScope.httpTokenClientEngine(): HttpClientEngine =
-    install({ CIO.create() }) { e, _: ExitCase -> e.close().also { log.info("Closed http token client engine") } }
+    install({ CIO.create() }) { e, _: ExitCase -> e.close().also { log.info { "Closed http token client engine" } } }
 
 private fun httpTokenClient(config: Config, clientEngine: HttpClientEngine): HttpClient =
     HttpClient(clientEngine) {

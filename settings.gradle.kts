@@ -16,6 +16,7 @@ dependencyResolutionManagement {
             version("nimbus-jwt", "9.31")
             version("suspendapp", "0.5.0")
             version("ktor", "3.0.3")
+            version("kotlin-logging", "7.0.3")
             version("token-validation-ktor", "5.0.15")
             version("eclipse-angus", "2.0.2")
             version("hoplite", "2.8.2")
@@ -50,7 +51,8 @@ dependencyResolutionManagement {
 
             library("ktor-server-metrics-micrometer", "io.ktor", "ktor-server-metrics-micrometer").versionRef("ktor")
             library("micrometer-registry-prometheus", "io.micrometer", "micrometer-registry-prometheus").versionRef("prometheus")
-
+            
+            library("kotlin-logging", "io.github.oshai", "kotlin-logging-jvm").versionRef("kotlin-logging")
             library("logback-classic", "ch.qos.logback", "logback-classic").versionRef("logback")
             library("logback-logstash", "net.logstash.logback", "logstash-logback-encoder").versionRef("logstash")
 
