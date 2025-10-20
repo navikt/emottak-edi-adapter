@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
+    implementation(libs.kotlin.logging)
     implementation(libs.token.validation.ktor.v3)
     implementation(libs.emottak.utils)
     testImplementation(testLibs.bundles.kotest)
