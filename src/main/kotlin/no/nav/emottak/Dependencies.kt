@@ -9,7 +9,6 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders.Accept
@@ -58,7 +57,7 @@ private fun httpClient(
     install(HttpTimeout) {
         connectTimeoutMillis = config.httpClient.connectionTimeout.value
     }
-    install(Logging) { level = LogLevel.INFO }
+    install(Logging) { level = config.httpClient.logLevel }
     install(ContentNegotiation) { json() }
     install(DpopAuth) {
         dpopJwtProvider = jwtProvider

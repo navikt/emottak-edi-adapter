@@ -1,5 +1,6 @@
 package no.nav.emottak.edi.adapter.config
 
+import io.ktor.client.plugins.logging.LogLevel
 import no.nav.emottak.utils.config.Server
 import java.net.URI
 
@@ -58,7 +59,8 @@ data class HttpClient(
     val connectionTimeout: Timeout,
     val apiVersionHeader: ApiVersionHeader,
     val sourceSystemHeader: SourceSystemHeader,
-    val acceptTypeHeader: AcceptTypeHeader
+    val acceptTypeHeader: AcceptTypeHeader,
+    val logLevel: LogLevel
 ) {
     @JvmInline
     value class ApiVersionHeader(val value: String)
