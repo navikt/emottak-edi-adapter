@@ -51,7 +51,7 @@ dependencyResolutionManagement {
 
             library("ktor-server-metrics-micrometer", "io.ktor", "ktor-server-metrics-micrometer").versionRef("ktor")
             library("micrometer-registry-prometheus", "io.micrometer", "micrometer-registry-prometheus").versionRef("prometheus")
-            
+
             library("kotlin-logging", "io.github.oshai", "kotlin-logging-jvm").versionRef("kotlin-logging")
             library("logback-classic", "ch.qos.logback", "logback-classic").versionRef("logback")
             library("logback-logstash", "net.logstash.logback", "logstash-logback-encoder").versionRef("logstash")
