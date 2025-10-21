@@ -14,12 +14,8 @@ data class Config(
 
 data class Nhn(
     val baseUrl: URI,
-    val apiUri: ApiUri,
     val keyPairPath: KeyPairPath
 ) {
-    @JvmInline
-    value class ApiUri(val value: String)
-
     @JvmInline
     value class KeyPairPath(val value: String)
 }
