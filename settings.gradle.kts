@@ -21,7 +21,7 @@ dependencyResolutionManagement {
             version("eclipse-angus", "2.0.2")
             version("hoplite", "2.8.2")
             version("prometheus", "1.12.4")
-            version("logback", "1.5.13")
+            version("logback", "1.5.19")
             version("logstash", "7.4")
             version("emottak-utils", "0.3.3")
 
