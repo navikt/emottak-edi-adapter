@@ -15,13 +15,13 @@ dependencyResolutionManagement {
             version("jwt", "4.4.0")
             version("nimbus-jwt", "9.31")
             version("suspendapp", "0.5.0")
-            version("ktor", "3.0.3")
+            version("ktor", "3.3.1")
             version("kotlin-logging", "7.0.3")
-            version("token-validation-ktor", "5.0.15")
+            version("token-validation-ktor", "5.0.30")
             version("eclipse-angus", "2.0.2")
             version("hoplite", "2.8.2")
             version("prometheus", "1.12.4")
-            version("logback", "1.4.11")
+            version("logback", "1.5.19")
             version("logstash", "7.4")
             version("emottak-utils", "0.3.3")
 
@@ -67,8 +67,8 @@ dependencyResolutionManagement {
 
         create("testLibs") {
             version("arrow", "2.0.0")
-            version("ktor", "3.0.3")
-            version("ktor-server-test", "3.0.3")
+            version("ktor", "3.3.1")
+            version("ktor-server-test", "3.3.1")
             version("kotest", "5.9.1")
             version("mock-oauth2", "2.1.2")
             version("testcontainers", "1.18.1")
