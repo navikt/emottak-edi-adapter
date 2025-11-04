@@ -6,10 +6,11 @@ import java.net.URI
 
 data class Config(
     val nhn: Nhn,
-    val azureAuth: AzureAuth,
+    val nhnOAuth: NhnOAuth,
     val server: Server,
     val httpClient: HttpClient,
-    val httpTokenClient: HttpTokenClient
+    val httpTokenClient: HttpTokenClient,
+    val azureAuth: AzureAuth
 )
 
 data class Nhn(
@@ -20,7 +21,7 @@ data class Nhn(
     value class KeyPairPath(val value: String)
 }
 
-data class AzureAuth(
+data class NhnOAuth(
     val keyId: KeyId,
     val clientId: ClientId,
     val audience: Audience,
@@ -46,6 +47,21 @@ data class AzureAuth(
 
     @JvmInline
     value class ClientAssertionType(val value: String)
+}
+
+data class AzureAuth(
+    val issuer: Issuer,
+    val appName: AppName,
+    val appScope: AppScope
+) {
+    @JvmInline
+    value class Issuer(val value: String)
+
+    @JvmInline
+    value class AppName(val value: String)
+
+    @JvmInline
+    value class AppScope(val value: String)
 }
 
 @JvmInline

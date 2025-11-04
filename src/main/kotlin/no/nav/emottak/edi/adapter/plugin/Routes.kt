@@ -11,6 +11,7 @@ import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.contentType
 import io.ktor.http.parametersOf
 import io.ktor.server.application.Application
+import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
@@ -22,6 +23,7 @@ import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.emottak.MessageError
+import no.nav.emottak.config
 import no.nav.emottak.edi.adapter.model.AppRec
 import no.nav.emottak.edi.adapter.model.Message
 import no.nav.emottak.herId
@@ -38,9 +40,9 @@ fun Application.configureRoutes(
 ) {
     routing {
         internalRoutes(registry)
-        // authenticate(config.azureAuth.azureAdAuth.value) {
-        externalRoutes(ediClient)
-        // }
+        authenticate(config().azureAuth.issuer.value) {
+            externalRoutes(ediClient)
+        }
     }
 }
 

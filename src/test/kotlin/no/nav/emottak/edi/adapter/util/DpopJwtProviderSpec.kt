@@ -30,7 +30,7 @@ class DpopJwtProviderSpec : StringSpec(
 
             val claims = signedJwt.jwtClaimsSet
             claims.getStringClaim("htm") shouldBe "POST"
-            claims.getStringClaim("htu") shouldBe config().azureAuth.tokenEndpoint.toString()
+            claims.getStringClaim("htu") shouldBe config().nhnOAuth.tokenEndpoint.toString()
             claims.getStringClaim("jti") shouldNotBe null
             claims.getDateClaim("iat") shouldNotBe null
         }
@@ -44,7 +44,7 @@ class DpopJwtProviderSpec : StringSpec(
 
             val claims = signedJwt.jwtClaimsSet
             claims.getStringClaim("htm") shouldBe Post.value
-            claims.getStringClaim("htu") shouldBe config().azureAuth.tokenEndpoint.toString()
+            claims.getStringClaim("htu") shouldBe config().nhnOAuth.tokenEndpoint.toString()
             claims.getStringClaim("nonce") shouldBe random.toString()
             claims.getStringClaim("jti") shouldNotBe null
             claims.getDateClaim("iat") shouldNotBe null
@@ -73,20 +73,20 @@ class DpopJwtProviderSpec : StringSpec(
             val decoded = JWT.decode(assertion)
 
             val verification = JWT.require(RSA256(jwtProvider.rsaKey().toRSAPublicKey(), null))
-                .withIssuer(config().azureAuth.clientId.value)
-                .withSubject(config().azureAuth.clientId.value)
-                .withAudience(config().azureAuth.audience.value)
+                .withIssuer(config().nhnOAuth.clientId.value)
+                .withSubject(config().nhnOAuth.clientId.value)
+                .withAudience(config().nhnOAuth.audience.value)
                 .build()
 
             verification.verify(assertion)
 
-            decoded.issuer shouldBe config().azureAuth.clientId.value
-            decoded.subject shouldBe config().azureAuth.clientId.value
-            decoded.audience shouldContain config().azureAuth.audience.value
+            decoded.issuer shouldBe config().nhnOAuth.clientId.value
+            decoded.subject shouldBe config().nhnOAuth.clientId.value
+            decoded.audience shouldContain config().nhnOAuth.audience.value
             decoded.getClaim("jti").asString() shouldNotBe null
 
             val headerJson = String(getUrlDecoder().decode(decoded.header))
-            headerJson shouldContain "\"kid\":\"${config().azureAuth.keyId.value}\""
+            headerJson shouldContain "\"kid\":\"${config().nhnOAuth.keyId.value}\""
             headerJson shouldContain "\"alg\":\"RS256\""
             headerJson shouldContain "\"typ\":\"client-authentication+jwt\""
         }
