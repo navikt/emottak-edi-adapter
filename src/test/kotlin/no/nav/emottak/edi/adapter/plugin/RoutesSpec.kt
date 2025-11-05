@@ -34,13 +34,13 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.testing.TestApplicationBuilder
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
-import kotlin.text.Charsets.UTF_8
 import no.nav.emottak.config
 import no.nav.emottak.edi.adapter.auth.AuthConfig
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.token.support.v3.tokenValidationSupport
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.text.Charsets.UTF_8
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 class RoutesSpec : StringSpec(
@@ -371,19 +371,18 @@ class RoutesSpec : StringSpec(
                 response.status shouldBe Unauthorized
             }
         }
-
     }
 )
 
 private fun TestApplicationBuilder.installExternalRoutes(ediClient: HttpClient, useAuthentication: Boolean = false) {
     install(ContentNegotiation) { json() }
-    if(useAuthentication) {
+    if (useAuthentication) {
         install(Authentication) {
             tokenValidationSupport(config().azureAuth.issuer.value, AuthConfig.getTokenSupportConfig())
         }
     }
     routing {
-        if(useAuthentication) {
+        if (useAuthentication) {
             authenticate(config().azureAuth.issuer.value) {
                 externalRoutes(ediClient)
             }
