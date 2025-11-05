@@ -1,5 +1,6 @@
 package no.nav.emottak.edi.adapter.plugin
 
+import com.nimbusds.jwt.SignedJWT
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
@@ -11,6 +12,7 @@ import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -20,10 +22,14 @@ import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.NoContent
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
+import io.ktor.http.HttpStatusCode.Companion.Unauthorized
 import io.ktor.http.content.TextContent
 import io.ktor.http.contentType
 import io.ktor.http.fullPath
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.install
+import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.authenticate
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.testing.TestApplicationBuilder
 import io.ktor.server.testing.testApplication
@@ -31,10 +37,30 @@ import kotlinx.serialization.json.Json
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.text.Charsets.UTF_8
+import no.nav.emottak.config
+import no.nav.emottak.edi.adapter.auth.AuthConfig
+import no.nav.security.mock.oauth2.MockOAuth2Server
+import no.nav.security.token.support.v3.tokenValidationSupport
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 class RoutesSpec : StringSpec(
     {
+        lateinit var mockOAuth2Server: MockOAuth2Server
+
+        val getToken: (String) -> SignedJWT = { audience: String ->
+            mockOAuth2Server.issueToken(
+                issuerId = config().azureAuth.issuer.value,
+                audience = audience,
+                subject = "testUser"
+            )
+        }
+
+        val invalidAudience = "api://dev-fss.team-emottak.some-other-service/.default"
+
+        beforeSpec {
+            mockOAuth2Server = MockOAuth2Server().also { it.start(port = 3344) }
+        }
+
         "GET /messages returns EDI response" {
             val ediClient = fakeEdiClient {
                 it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1"
@@ -299,12 +325,72 @@ class RoutesSpec : StringSpec(
                 response.status shouldBe NotFound
             }
         }
+
+        "GET /messages returns EDI response with authentication" {
+            val ediClient = fakeEdiClient {
+                it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1"
+                respond("""[{"id":"1"}]""")
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient, useAuthentication = true)
+
+                val response = client.getWithAuth("/api/v1/messages?id=1", getToken)
+
+                response.status shouldBe OK
+                response.bodyAsText() shouldBe """[{"id":"1"}]"""
+            }
+        }
+
+        "GET /messages returns Unauthorised if access token is missing" {
+            val ediClient = fakeEdiClient {
+                it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1"
+                respond("""[{"id":"1"}]""")
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient, useAuthentication = true)
+
+                val response = client.get("/api/v1/messages?id=1")
+
+                response.status shouldBe Unauthorized
+            }
+        }
+
+        "GET /messages returns Unauthorised if access token is invalid" {
+            val ediClient = fakeEdiClient {
+                it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1"
+                respond("""[{"id":"1"}]""")
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient, useAuthentication = true)
+
+                val response = client.getWithAuth("/api/v1/messages?id=1", getToken, invalidAudience)
+
+                response.status shouldBe Unauthorized
+            }
+        }
+
     }
 )
 
-private fun TestApplicationBuilder.installExternalRoutes(ediClient: HttpClient) {
+private fun TestApplicationBuilder.installExternalRoutes(ediClient: HttpClient, useAuthentication: Boolean = false) {
     install(ContentNegotiation) { json() }
-    routing { externalRoutes(ediClient) }
+    if(useAuthentication) {
+        install(Authentication) {
+            tokenValidationSupport(config().azureAuth.issuer.value, AuthConfig.getTokenSupportConfig())
+        }
+    }
+    routing {
+        if(useAuthentication) {
+            authenticate(config().azureAuth.issuer.value) {
+                externalRoutes(ediClient)
+            }
+        } else {
+            externalRoutes(ediClient)
+        }
+    }
 }
 
 private fun fakeEdiClient(
@@ -330,3 +416,16 @@ private fun base64EncodedDocument(): String =
             .trimIndent()
             .toByteArray(UTF_8)
     )
+
+suspend fun HttpClient.getWithAuth(
+    url: String,
+    getToken: (String) -> SignedJWT,
+    audience: String = AuthConfig.getScope()
+): io.ktor.client.statement.HttpResponse {
+    return this.get(url) {
+        header(
+            "Authorization",
+            "Bearer ${getToken(audience).serialize()}"
+        )
+    }
+}
