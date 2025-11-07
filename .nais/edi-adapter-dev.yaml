@@ -73,10 +73,8 @@ spec:
           namespace: aura
           cluster: dev-gcp
         - application: ebms-provider
-          namespace: aura
           cluster: dev-fss
-        - application: ebms-async
-          namespace: aura
+        - application: emottak-state-service
           cluster: dev-gcp
   env:
     - name: NHN_BASE_URL
