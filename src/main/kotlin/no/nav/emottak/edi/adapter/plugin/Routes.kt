@@ -31,6 +31,7 @@ import no.nav.emottak.messageId
 import no.nav.emottak.messageIds
 import no.nav.emottak.senderHerId
 import no.nav.emottak.toContent
+import no.nav.emottak.utils.edi2.models.PostAppRecRequest
 
 private const val RECEIVER_HER_IDS = "ReceiverHerIds"
 
@@ -67,14 +68,14 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 val messageIds = messageIds(call)
                 val params = parametersOf(RECEIVER_HER_IDS to messageIds)
                 val response = ediClient.get("Messages") { url { parameters.appendAll(params) } }
-                call.respond(response.bodyAsText())
+                call.respond(response.status, response.bodyAsText())
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
         get("/messages/{messageId}") {
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId")
-                call.respond(response.bodyAsText())
+                call.respond(response.status, response.bodyAsText())
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
 
@@ -82,7 +83,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/business-document")
-                call.respond(response.bodyAsText())
+                call.respond(response.status, response.bodyAsText())
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
 
@@ -90,14 +91,14 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/status")
-                call.respond(response.bodyAsText())
+                call.respond(response.status, response.bodyAsText())
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
         get("/messages/{messageId}/apprec") {
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/apprec")
-                call.respond(response.bodyAsText())
+                call.respond(response.status, response.bodyAsText())
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
         post("/messages") {
@@ -106,20 +107,20 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 contentType(Json)
                 setBody(message)
             }
-            call.respond(response.bodyAsText())
+            call.respond(response.status, response.bodyAsText())
         }
 
         post("/messages/{messageId}/apprec/{apprecSenderHerId}") {
             recover({
                 val messageId = messageId(call)
                 val senderHerId = senderHerId(call)
-                val appRec = call.receive<AppRec>()
+                val appRec = call.receive<PostAppRecRequest>()
 
                 val response = ediClient.post("Messages/$messageId/apprec/$senderHerId") {
                     contentType(Json)
                     setBody(appRec)
                 }
-                call.respond(response.bodyAsText())
+                call.respond(response.status, response.bodyAsText())
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
 
@@ -128,7 +129,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 val messageId = messageId(call)
                 val herId = herId(call)
                 val response = ediClient.put("/messages/$messageId/read/$herId")
-                call.respond(response.status.value)
+                call.respond(response.status, response.status.value)
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
     }
