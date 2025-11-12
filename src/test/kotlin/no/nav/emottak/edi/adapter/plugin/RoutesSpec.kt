@@ -297,7 +297,7 @@ class RoutesSpec : StringSpec(
 
                 val response = client.put("/api/v1/messages/5/read/111")
 
-                response.status shouldBe OK
+                response.status shouldBe NoContent
             }
         }
 

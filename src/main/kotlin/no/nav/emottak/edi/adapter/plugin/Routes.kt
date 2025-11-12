@@ -24,7 +24,6 @@ import io.ktor.server.routing.routing
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.emottak.MessageError
 import no.nav.emottak.config
-import no.nav.emottak.edi.adapter.model.AppRec
 import no.nav.emottak.edi.adapter.model.Message
 import no.nav.emottak.herId
 import no.nav.emottak.messageId
