@@ -70,7 +70,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 val params = parametersOf(RECEIVER_HER_IDS to messageIds)
                 val response = ediClient.get("Messages") { url { parameters.appendAll(params) } }
                 logger.info("EDI2 test: Response from GET /Messages: ${response.status} - ${response.bodyAsText()}")
-                call.respond(response.status, response.bodyAsText())
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
         get("/messages/{messageId}") {
@@ -78,7 +82,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId")
                 logger.info("EDI2 test: Response from GET /Messages/$messageId: ${response.status} - ${response.bodyAsText()}")
-                call.respond(response.status, response.bodyAsText())
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
 
@@ -87,7 +95,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/business-document")
                 logger.info("EDI2 test: Response from GET /Messages/$messageId/business-document: ${response.status} - ${response.bodyAsText()}")
-                call.respond(response.status, response.bodyAsText())
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
 
@@ -96,7 +108,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/status")
                 logger.info("EDI2 test: Response from GET /Messages/$messageId/status: ${response.status} - ${response.bodyAsText()}")
-                call.respond(response.status, response.bodyAsText())
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
         get("/messages/{messageId}/apprec") {
@@ -104,7 +120,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/apprec")
                 logger.info("EDI2 test: Response from GET /Messages/$messageId/apprec: ${response.status} - ${response.bodyAsText()}")
-                call.respond(response.status, response.bodyAsText())
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
         post("/messages") {
@@ -114,7 +134,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 setBody(message)
             }
             logger.info("EDI2 test: Response from POST /Messages: ${response.status} - ${response.bodyAsText()}")
-            call.respond(response.status, response.bodyAsText())
+            call.respondText(
+                text = response.bodyAsText(),
+                contentType = Json,
+                status = response.status
+            )
         }
 
         post("/messages/{messageId}/apprec/{apprecSenderHerId}") {
@@ -128,7 +152,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                     setBody(appRec)
                 }
                 logger.info("EDI2 test: Response from POST /Messages/$messageId/apprec/$senderHerId: ${response.status} - ${response.bodyAsText()}")
-                call.respond(response.status, response.bodyAsText())
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
 
@@ -138,7 +166,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 val herId = herId(call)
                 val response = ediClient.put("/messages/$messageId/read/$herId")
                 logger.info("EDI2 test: Response from PUT /Messages/$messageId/read/$herId: ${response.status} - ${response.bodyAsText()}")
-                call.respond(response.status, response.status.value)
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
     }
