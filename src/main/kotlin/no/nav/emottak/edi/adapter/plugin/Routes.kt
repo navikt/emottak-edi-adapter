@@ -31,6 +31,7 @@ import no.nav.emottak.messageIds
 import no.nav.emottak.senderHerId
 import no.nav.emottak.toContent
 import no.nav.emottak.utils.edi2.models.PostAppRecRequest
+import org.slf4j.LoggerFactory
 
 private const val RECEIVER_HER_IDS = "ReceiverHerIds"
 
@@ -62,11 +63,13 @@ fun Route.internalRoutes(registry: PrometheusMeterRegistry) {
 
 fun Route.externalRoutes(ediClient: HttpClient) {
     route("/api/v1") {
+        val logger = LoggerFactory.getLogger("CallLogging")
         get("/messages") {
             recover({
                 val messageIds = messageIds(call)
                 val params = parametersOf(RECEIVER_HER_IDS to messageIds)
                 val response = ediClient.get("Messages") { url { parameters.appendAll(params) } }
+                logger.info("EDI2 test: Response from GET /Messages: ${response.status} - ${response.bodyAsText()}")
                 call.respond(response.status, response.bodyAsText())
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
@@ -74,6 +77,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId")
+                logger.info("EDI2 test: Response from GET /Messages/$messageId: ${response.status} - ${response.bodyAsText()}")
                 call.respond(response.status, response.bodyAsText())
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
@@ -82,6 +86,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/business-document")
+                logger.info("EDI2 test: Response from GET /Messages/$messageId/business-document: ${response.status} - ${response.bodyAsText()}")
                 call.respond(response.status, response.bodyAsText())
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
@@ -90,6 +95,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/status")
+                logger.info("EDI2 test: Response from GET /Messages/$messageId/status: ${response.status} - ${response.bodyAsText()}")
                 call.respond(response.status, response.bodyAsText())
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
@@ -97,6 +103,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/apprec")
+                logger.info("EDI2 test: Response from GET /Messages/$messageId/apprec: ${response.status} - ${response.bodyAsText()}")
                 call.respond(response.status, response.bodyAsText())
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
@@ -106,6 +113,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 contentType(Json)
                 setBody(message)
             }
+            logger.info("EDI2 test: Response from POST /Messages: ${response.status} - ${response.bodyAsText()}")
             call.respond(response.status, response.bodyAsText())
         }
 
@@ -119,6 +127,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                     contentType(Json)
                     setBody(appRec)
                 }
+                logger.info("EDI2 test: Response from POST /Messages/$messageId/apprec/$senderHerId: ${response.status} - ${response.bodyAsText()}")
                 call.respond(response.status, response.bodyAsText())
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
@@ -128,6 +137,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 val messageId = messageId(call)
                 val herId = herId(call)
                 val response = ediClient.put("/messages/$messageId/read/$herId")
+                logger.info("EDI2 test: Response from PUT /Messages/$messageId/read/$herId: ${response.status} - ${response.bodyAsText()}")
                 call.respond(response.status, response.status.value)
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
