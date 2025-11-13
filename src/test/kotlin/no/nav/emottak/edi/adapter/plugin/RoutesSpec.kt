@@ -70,7 +70,7 @@ class RoutesSpec : StringSpec(
             testApplication {
                 installExternalRoutes(ediClient)
 
-                val response = client.get("/api/v1/messages?id=1")
+                val response = client.get("/api/v1/messages?ReceiverHerIds=1")
 
                 response.status shouldBe OK
                 response.bodyAsText() shouldBe """[{"id":"1"}]"""
@@ -83,9 +83,9 @@ class RoutesSpec : StringSpec(
             testApplication {
                 installExternalRoutes(ediClient)
 
-                val response = client.get("/api/v1/messages?id=")
+                val response = client.get("/api/v1/messages?ReceiverHerIds=")
                 response.status shouldBe BadRequest
-                response.bodyAsText() shouldContain "Message ids"
+                response.bodyAsText() shouldContain "Receiver her ids"
             }
         }
 
@@ -98,7 +98,7 @@ class RoutesSpec : StringSpec(
                 val response = client.get("/api/v1/messages")
 
                 response.status shouldBe BadRequest
-                response.bodyAsText() shouldContain "Message ids"
+                response.bodyAsText() shouldContain "Receiver her ids"
             }
         }
 
@@ -194,7 +194,7 @@ class RoutesSpec : StringSpec(
         "POST /messages forwards body to EDI" {
             val ediClient = fakeEdiClient { request ->
                 request.url.fullPath shouldBe "/Messages"
-                (request.body as TextContent).text shouldContain "HealthInformation"
+                (request.body as TextContent).text shouldContain base64EncodedDocument()
                 respond("""{"result":"created"}""")
             }
 
@@ -204,9 +204,25 @@ class RoutesSpec : StringSpec(
                 val message =
                     """
                 {
-                  "messageType":"HealthInformation",
-                  "recipient":"mottak-qass@test-es.nav.no",
-                  "businessDocument": ${base64EncodedDocument()}
+                  "businessDocument":  ${base64EncodedDocument()},
+                  "contentType": "application/xml",
+                  "contentTransferEncoding": "base64",
+                  "ebXmlOverrides": {
+                    "cpaId": "test-cpa-id",
+                    "conversationId": "test-conversation-id",
+                    "service": "test-service",
+                    "serviceType": "test-service-type",
+                    "action": "test-action",
+                    "role": "test-sender-role",
+                    "useSenderLevel1HerId": true,
+                    "receiverRole": "test-receiver-role",
+                    "applicationName": "test-application-name",
+                    "applicationVersion": "1.0",
+                    "middlewareName": "test-middleware-name",
+                    "middlewareVersion": "1.0",
+                    "compressPayload": false
+                  },
+                  "receiverHerIdsSubset": [123456]
                 }
                 """
 
@@ -335,7 +351,7 @@ class RoutesSpec : StringSpec(
             testApplication {
                 installExternalRoutes(ediClient, useAuthentication = true)
 
-                val response = client.getWithAuth("/api/v1/messages?id=1", getToken)
+                val response = client.getWithAuth("/api/v1/messages?ReceiverHerIds=1", getToken)
 
                 response.status shouldBe OK
                 response.bodyAsText() shouldBe """[{"id":"1"}]"""
