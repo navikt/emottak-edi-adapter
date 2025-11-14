@@ -31,7 +31,6 @@ import no.nav.emottak.senderHerId
 import no.nav.emottak.toContent
 import no.nav.emottak.utils.edi2.models.PostAppRecRequest
 import no.nav.emottak.utils.edi2.models.PostMessageRequest
-import org.slf4j.LoggerFactory
 
 private const val RECEIVER_HER_IDS = "ReceiverHerIds"
 
