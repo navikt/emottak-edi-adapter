@@ -11,6 +11,7 @@ import io.ktor.server.netty.Netty
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.awaitCancellation
+import no.nav.emottak.edi.adapter.plugin.configureAuthentication
 import no.nav.emottak.edi.adapter.plugin.configureCallLogging
 import no.nav.emottak.edi.adapter.plugin.configureContentNegotiation
 import no.nav.emottak.edi.adapter.plugin.configureMetrics
@@ -43,6 +44,7 @@ internal fun ediAdapterModule(
     return {
         configureMetrics(meterRegistry)
         configureContentNegotiation()
+        configureAuthentication()
         configureRoutes(ediClient, meterRegistry)
         configureCallLogging()
     }
