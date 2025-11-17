@@ -7,6 +7,7 @@ import arrow.fx.coroutines.resourceScope
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.server.application.Application
+import io.ktor.server.engine.logError
 import io.ktor.server.netty.Netty
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.coroutines.CancellationException
@@ -42,6 +43,8 @@ internal fun ediAdapterModule(
     meterRegistry: PrometheusMeterRegistry
 ): Application.() -> Unit {
     return {
+        log.debug { "EDI2 test: konfigurasjon: ${config()}" }
+
         configureMetrics(meterRegistry)
         configureContentNegotiation()
         configureAuthentication()
