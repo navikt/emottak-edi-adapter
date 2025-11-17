@@ -435,7 +435,7 @@ private fun base64EncodedDocument(): String =
 suspend fun HttpClient.getWithAuth(
     url: String,
     getToken: (String) -> SignedJWT,
-    audience: String = config().azureAuth.appScope.value
+    audience: String = AuthConfig.getScope()
 ): io.ktor.client.statement.HttpResponse {
     return this.get(url) {
         header(
