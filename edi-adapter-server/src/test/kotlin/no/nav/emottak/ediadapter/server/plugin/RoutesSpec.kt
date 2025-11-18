@@ -19,6 +19,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
+import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.NoContent
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
@@ -26,6 +27,7 @@ import io.ktor.http.HttpStatusCode.Companion.Unauthorized
 import io.ktor.http.content.TextContent
 import io.ktor.http.contentType
 import io.ktor.http.fullPath
+import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
@@ -250,6 +252,38 @@ class RoutesSpec : StringSpec(
             }
         }
 
+        "POST /messages fetches Location header when EDI responds with Created" {
+            val newObjectLocation = "/Messages/1234"
+            val ediClient = fakeEdiClient { request ->
+                respond(
+                    content = """{"result":"created"}""",
+                    headers = headersOf("Location", newObjectLocation),
+                    status = Created
+                )
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+
+                val message =
+                    """
+                {
+                  "messageType":"HealthInformation",
+                  "recipient":"mottak-qass@test-es.nav.no",
+                  "businessDocument": ${base64EncodedDocument()}
+                }
+                """
+
+                val response = client.post("/api/v1/messages") {
+                    contentType(Json)
+                    setBody(message)
+                }
+
+                response.status shouldBe Created
+                response.bodyAsText() shouldContain newObjectLocation
+            }
+        }
+
         "POST /messages/{id}/apprec/{sender} forwards body" {
             val ediClient = fakeEdiClient { request ->
                 request.url.fullPath shouldBe "/Messages/77/apprec/8142"
@@ -299,6 +333,31 @@ class RoutesSpec : StringSpec(
                     setBody("""{"status":"1"}""")
                 }
                 response.status shouldBe NotFound
+            }
+        }
+
+        "POST /messages/{messageId}/apprec/{apprecSenderHerId} fetches Location header when EDI responds with Created" {
+            val newObjectLocation = "/Messages/1234/apprec/5678"
+            val ediClient = fakeEdiClient { request ->
+                respond(
+                    content = """{"result":"created"}""",
+                    headers = headersOf("Location", newObjectLocation),
+                    status = Created
+                )
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+
+                val apprecBody = """{ "appRecStatus":"1", "appRecErrorList":[] }"""
+
+                val response = client.post("/api/v1/messages/1234/apprec/5678") {
+                    contentType(Json)
+                    setBody(apprecBody)
+                }
+
+                response.status shouldBe Created
+                response.bodyAsText() shouldContain newObjectLocation
             }
         }
 
