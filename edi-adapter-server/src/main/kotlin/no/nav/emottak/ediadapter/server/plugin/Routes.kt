@@ -6,8 +6,10 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType.Application.Json
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.parametersOf
 import io.ktor.server.application.Application
@@ -31,8 +33,10 @@ import no.nav.emottak.ediadapter.server.messageId
 import no.nav.emottak.ediadapter.server.receiverHerIds
 import no.nav.emottak.ediadapter.server.senderHerId
 import no.nav.emottak.ediadapter.server.toContent
+import no.nav.emottak.ediadapter.server.util.JsonUtil
 
 private const val RECEIVER_HER_IDS = "ReceiverHerIds"
+private const val LOCATION_FIELD_NAME = "locationUrl"
 
 fun Application.configureRoutes(
     ediClient: HttpClient,
@@ -128,7 +132,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 setBody(message)
             }
             call.respondText(
-                text = response.bodyAsText(),
+                text = response.bodyAsTextExtended(),
                 contentType = Json,
                 status = response.status
             )
@@ -145,7 +149,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                     setBody(appRec)
                 }
                 call.respondText(
-                    text = response.bodyAsText(),
+                    text = response.bodyAsTextExtended(),
                     contentType = Json,
                     status = response.status
                 )
@@ -165,4 +169,16 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
     }
+}
+
+suspend fun HttpResponse.bodyAsTextExtended(): String {
+    if (this.status == HttpStatusCode.Created) {
+        val responseBody = this.bodyAsText()
+        val location =
+            this.headers["Location"] ?: throw IllegalStateException("Location header is missing in Created response")
+
+        return JsonUtil.extendJson(responseBody, mapOf(LOCATION_FIELD_NAME to location))
+    }
+
+    return this.bodyAsText()
 }
