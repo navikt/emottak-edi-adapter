@@ -43,8 +43,6 @@ internal fun ediAdapterModule(
     meterRegistry: PrometheusMeterRegistry
 ): Application.() -> Unit {
     return {
-        log.debug { "EDI2 test: konfigurasjon: ${config()}" }
-
         configureMetrics(meterRegistry)
         configureContentNegotiation()
         configureAuthentication()
