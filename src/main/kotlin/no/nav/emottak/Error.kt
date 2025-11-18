@@ -10,7 +10,9 @@ sealed interface ValidationError : MessageError
 
 data object MessageIdEmpty : ValidationError
 data object MessageIdsMissing : ValidationError
+data object ReceiverHerIdsMissing : ValidationError
 data object MessageIdsEmpty : ValidationError
+data object ReceiverHerIdsEmpty : ValidationError
 data object HerIdEmpty : ValidationError
 data object SenderHerIdMissing : ValidationError
 data object SenderHerIdEmpty : ValidationError
@@ -23,8 +25,14 @@ fun MessageError.toContent(): TextContent =
         is MessageIdsMissing ->
             TextContent("Message ids are missing")
 
+        is ReceiverHerIdsMissing ->
+            TextContent("Receiver her ids are missing")
+
         is MessageIdsEmpty ->
             TextContent("Message ids are empty")
+
+        is ReceiverHerIdsEmpty ->
+            TextContent("Receiver her ids are empty")
 
         is HerIdEmpty ->
             TextContent("Her id is empty")
