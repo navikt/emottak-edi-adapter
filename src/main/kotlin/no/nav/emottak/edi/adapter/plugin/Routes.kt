@@ -108,7 +108,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 contentType(Json)
                 setBody(message)
             }
-            call.respond(response.bodyAsTextExtended())
+            call.respondText(
+                text = response.bodyAsTextExtended(),
+                contentType = Json,
+                status = response.status
+            )
         }
 
         post("/messages/{messageId}/apprec/{apprecSenderHerId}") {
@@ -121,7 +125,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                     contentType(Json)
                     setBody(appRec)
                 }
-                call.respond(response.bodyAsTextExtended())
+                call.respondText(
+                    text = response.bodyAsTextExtended(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
 
