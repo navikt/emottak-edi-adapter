@@ -6,8 +6,10 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType.Application.Json
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.parametersOf
 import io.ktor.server.application.Application
@@ -24,6 +26,7 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.emottak.MessageError
 import no.nav.emottak.edi.adapter.model.AppRec
 import no.nav.emottak.edi.adapter.model.Message
+import no.nav.emottak.edi.adapter.util.JsonUtil
 import no.nav.emottak.herId
 import no.nav.emottak.messageId
 import no.nav.emottak.messageIds
@@ -31,6 +34,7 @@ import no.nav.emottak.senderHerId
 import no.nav.emottak.toContent
 
 private const val RECEIVER_HER_IDS = "ReceiverHerIds"
+private const val LOCATION_FIELD_NAME = "locationUrl"
 
 fun Application.configureRoutes(
     ediClient: HttpClient,
@@ -104,7 +108,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 contentType(Json)
                 setBody(message)
             }
-            call.respond(response.bodyAsText())
+            call.respondText(
+                text = response.bodyAsTextExtended(),
+                contentType = Json,
+                status = response.status
+            )
         }
 
         post("/messages/{messageId}/apprec/{apprecSenderHerId}") {
@@ -117,7 +125,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                     contentType(Json)
                     setBody(appRec)
                 }
-                call.respond(response.bodyAsText())
+                call.respondText(
+                    text = response.bodyAsTextExtended(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
 
@@ -130,4 +142,15 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
     }
+}
+
+suspend fun HttpResponse.bodyAsTextExtended(): String {
+    if (this.status == HttpStatusCode.Created) {
+        val responseBody = this.bodyAsText()
+        val location = this.headers["Location"] ?: throw IllegalStateException("Location header is missing in Created response")
+
+        return JsonUtil.extendJson(responseBody, mapOf(LOCATION_FIELD_NAME to location))
+    }
+
+    return this.bodyAsText()
 }
