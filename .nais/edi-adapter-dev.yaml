@@ -74,7 +74,7 @@ spec:
           cluster: dev-gcp
         - application: ebms-provider
           cluster: dev-fss
-        - application: emottak-state-service
+        - application: state-service
           cluster: dev-gcp
   env:
     - name: NHN_BASE_URL
