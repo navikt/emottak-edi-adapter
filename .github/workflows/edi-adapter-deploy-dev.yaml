@@ -53,6 +53,7 @@ jobs:
           team: team-emottak # required
           tag: ${{ github.sha }}
           dockerfile: Dockerfile # optional, default Dockerfile
+          docker_context: edi-adapter-server
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
 
