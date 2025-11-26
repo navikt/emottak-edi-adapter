@@ -40,7 +40,7 @@ jobs:
             ${{ runner.os }}-gradle-cache-
 
       - name: "Build and tests ${{ env.MODULE_NAME }}"
-        run: ./gradlew :test :build
+        run: ./gradlew  :edi-adapter-server:test  :edi-adapter-server:build
         env:
           ORG_GRADLE_PROJECT_githubUser: x-access-token
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}

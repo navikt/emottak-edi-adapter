@@ -50,14 +50,22 @@ dependencyResolutionManagement {
             library("ktor-client-logging", "io.ktor", "ktor-client-logging").versionRef("ktor")
 
             library("ktor-server-metrics-micrometer", "io.ktor", "ktor-server-metrics-micrometer").versionRef("ktor")
-            library("micrometer-registry-prometheus", "io.micrometer", "micrometer-registry-prometheus").versionRef("prometheus")
+            library(
+                "micrometer-registry-prometheus",
+                "io.micrometer",
+                "micrometer-registry-prometheus"
+            ).versionRef("prometheus")
 
             library("kotlin-logging", "io.github.oshai", "kotlin-logging-jvm").versionRef("kotlin-logging")
             library("logback-classic", "ch.qos.logback", "logback-classic").versionRef("logback")
             library("logback-logstash", "net.logstash.logback", "logstash-logback-encoder").versionRef("logstash")
 
             library("ktor-server-auth-jvm", "io.ktor", "ktor-server-auth-jvm").versionRef("ktor")
-            library("token-validation-ktor-v3", "no.nav.security", "token-validation-ktor-v3").versionRef("token-validation-ktor")
+            library(
+                "token-validation-ktor-v3",
+                "no.nav.security",
+                "token-validation-ktor-v3"
+            ).versionRef("token-validation-ktor")
 
             library("emottak-utils", "no.nav.emottak", "emottak-utils").versionRef("emottak-utils")
 
@@ -83,7 +91,11 @@ dependencyResolutionManagement {
             library("kotest-framework-datatest", "io.kotest", "kotest-framework-datatest").versionRef("kotest")
             library("kotest-extensions-jvm", "io.kotest", "kotest-extensions-jvm").versionRef("kotest")
 
-            library("kotest-extensions-testcontainers", "io.kotest.extensions", "kotest-extensions-testcontainers").versionRef("kotest-extensions")
+            library(
+                "kotest-extensions-testcontainers",
+                "io.kotest.extensions",
+                "kotest-extensions-testcontainers"
+            ).versionRef("kotest-extensions")
 
             library("kotest-assertions-arrow", "io.kotest.extensions", "kotest-assertions-arrow").versionRef("arrow")
 
@@ -118,3 +130,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "emottak-edi-adapter"
+
+include("edi-adapter-server")
