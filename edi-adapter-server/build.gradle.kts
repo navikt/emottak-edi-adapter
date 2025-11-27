@@ -76,5 +76,5 @@ dependencies {
 }
 
 application {
-    mainClass.set("no.nav.emottak.ediadapterserver.AppKt")
+    mainClass.set("no.nav.emottak.ediadapter.server.AppKt")
 }
