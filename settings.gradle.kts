@@ -132,3 +132,5 @@ dependencyResolutionManagement {
 rootProject.name = "emottak-edi-adapter"
 
 include("edi-adapter-server")
+include("edi-adapter-model")
+include("edi-adapter-client")
