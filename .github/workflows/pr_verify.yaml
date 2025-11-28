@@ -28,7 +28,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: "Build and tests"
-        run: ./gradlew test build
+        run: ./gradlew :edi-adapter-server:test  :edi-adapter-server:build
         env:
           ORG_GRADLE_PROJECT_githubUser: x-access-token
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}

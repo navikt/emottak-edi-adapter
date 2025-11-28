@@ -10,20 +10,8 @@ plugins {
 }
 
 tasks {
-    shadowJar {
-        archiveFileName.set("app.jar")
-    }
-    test {
-        useJUnitPlatform()
-    }
     ktlintFormat {
         enabled = true
-    }
-    ktlintCheck {
-        dependsOn("ktlintFormat")
-    }
-    build {
-        dependsOn("ktlintCheck")
     }
 }
 
@@ -34,47 +22,4 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
             "-opt-in=kotlin.uuid.ExperimentalUuidApi,arrow.fx.coroutines.await.ExperimentalAwaitAllApi"
         )
     }
-}
-
-dependencies {
-    implementation(libs.arrow.core)
-    implementation(libs.arrow.functions)
-    implementation(libs.arrow.fx.coroutines)
-    implementation(libs.arrow.resilience)
-    implementation(libs.arrow.suspendapp)
-    implementation(libs.arrow.suspendapp.ktor)
-    implementation(libs.bundles.logging)
-    implementation(libs.bundles.prometheus)
-    implementation(libs.hoplite.core)
-    implementation(libs.hoplite.hocon)
-    implementation(libs.jwt)
-    implementation(libs.nimbus.jwt)
-    implementation(libs.ktor.client.auth)
-    implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.logging)
-    implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.ktor.server.auth.jvm)
-    implementation(libs.ktor.server.content.negotiation)
-    implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.netty)
-    implementation(libs.kotlin.logging)
-    implementation(libs.token.validation.ktor.v3)
-    implementation(libs.emottak.utils)
-    testImplementation(testLibs.bundles.kotest)
-    testImplementation(testLibs.kotest.assertions.arrow)
-    testImplementation(testLibs.kotest.extensions.jvm)
-    testImplementation(testLibs.kotest.extensions.testcontainers)
-    testImplementation(testLibs.ktor.server.test.host)
-    testImplementation(testLibs.ktor.client.mock)
-    testImplementation(testLibs.mock.oauth2.server)
-    testImplementation(testLibs.testcontainers)
-    testImplementation(testLibs.testcontainers.postgresql)
-    testImplementation(testLibs.turbine)
-    testImplementation(kotlin("test"))
-}
-
-application {
-    mainClass.set("no.nav.emottak.AppKt")
 }
