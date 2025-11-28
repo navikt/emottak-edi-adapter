@@ -1,5 +1,9 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
-    kotlin("jvm")
+    kotlin("jvm") version "2.1.10"
+    kotlin("plugin.serialization") version "2.1.10"
+    id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
 group = "no.nav.emottak"
@@ -10,15 +14,33 @@ repositories {
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation(kotlin("stdlib-jdk8"))
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks {
+    register<Wrapper>("wrapper") {
+        gradleVersion = "8.1.1"
+    }
+    test {
+        useJUnitPlatform()
+    }
+    ktlintFormat {
+        this.enabled = true
+    }
+    ktlintCheck {
+        dependsOn("ktlintFormat")
+    }
+    build {
+        dependsOn("ktlintCheck")
+    }
 }
-kotlin {
-    jvmToolchain(21)
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
+        freeCompilerArgs = listOf(
+            "-opt-in=kotlin.uuid.ExperimentalUuidApi"
+        )
+    }
 }
