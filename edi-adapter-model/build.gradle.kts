@@ -10,8 +10,7 @@ group = "no.nav.emottak"
 version = "1.0-SNAPSHOT"
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    implementation(libs.kotlinx.serialization.json)
 }
 
 tasks {

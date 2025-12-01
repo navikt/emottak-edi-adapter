@@ -8,7 +8,6 @@ plugins {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
     api(project(":edi-adapter-model"))
     implementation(libs.ktor.client.core)
     implementation(libs.nimbus.jwt)
