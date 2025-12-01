@@ -11,6 +11,7 @@ import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.contentType
 import io.ktor.http.parametersOf
 import io.ktor.server.application.Application
+import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
@@ -21,12 +22,13 @@ import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import no.nav.emottak.ediadapter.model.PostAppRecRequest
+import no.nav.emottak.ediadapter.model.PostMessageRequest
 import no.nav.emottak.ediadapter.server.MessageError
+import no.nav.emottak.ediadapter.server.config
 import no.nav.emottak.ediadapter.server.herId
 import no.nav.emottak.ediadapter.server.messageId
-import no.nav.emottak.ediadapter.server.messageIds
-import no.nav.emottak.ediadapter.server.model.AppRec
-import no.nav.emottak.ediadapter.server.model.Message
+import no.nav.emottak.ediadapter.server.receiverHerIds
 import no.nav.emottak.ediadapter.server.senderHerId
 import no.nav.emottak.ediadapter.server.toContent
 
@@ -38,9 +40,10 @@ fun Application.configureRoutes(
 ) {
     routing {
         internalRoutes(registry)
-        // authenticate(config.azureAuth.azureAdAuth.value) {
-        externalRoutes(ediClient)
-        // }
+
+        authenticate(config().azureAuth.issuer.value) {
+            externalRoutes(ediClient)
+        }
     }
 }
 
@@ -62,17 +65,25 @@ fun Route.externalRoutes(ediClient: HttpClient) {
     route("/api/v1") {
         get("/messages") {
             recover({
-                val messageIds = messageIds(call)
-                val params = parametersOf(RECEIVER_HER_IDS to messageIds)
+                val receiverHerIds = receiverHerIds(call)
+                val params = parametersOf(RECEIVER_HER_IDS to receiverHerIds)
                 val response = ediClient.get("Messages") { url { parameters.appendAll(params) } }
-                call.respond(response.bodyAsText())
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
         get("/messages/{messageId}") {
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId")
-                call.respond(response.bodyAsText())
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
 
@@ -80,7 +91,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/business-document")
-                call.respond(response.bodyAsText())
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
 
@@ -88,36 +103,52 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/status")
-                call.respond(response.bodyAsText())
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
         get("/messages/{messageId}/apprec") {
             recover({
                 val messageId = messageId(call)
                 val response = ediClient.get("Messages/$messageId/apprec")
-                call.respond(response.bodyAsText())
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
         post("/messages") {
-            val message = call.receive<Message>()
+            val message = call.receive<PostMessageRequest>()
             val response = ediClient.post("Messages") {
                 contentType(Json)
                 setBody(message)
             }
-            call.respond(response.bodyAsText())
+            call.respondText(
+                text = response.bodyAsText(),
+                contentType = Json,
+                status = response.status
+            )
         }
 
         post("/messages/{messageId}/apprec/{apprecSenderHerId}") {
             recover({
                 val messageId = messageId(call)
                 val senderHerId = senderHerId(call)
-                val appRec = call.receive<AppRec>()
+                val appRec = call.receive<PostAppRecRequest>()
 
                 val response = ediClient.post("Messages/$messageId/apprec/$senderHerId") {
                     contentType(Json)
                     setBody(appRec)
                 }
-                call.respond(response.bodyAsText())
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
 
@@ -126,7 +157,11 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 val messageId = messageId(call)
                 val herId = herId(call)
                 val response = ediClient.put("/messages/$messageId/read/$herId")
-                call.respond(response.status.value)
+                call.respondText(
+                    text = response.bodyAsText(),
+                    contentType = Json,
+                    status = response.status
+                )
             }) { e: MessageError -> call.respond(e.toContent()) }
         }
     }

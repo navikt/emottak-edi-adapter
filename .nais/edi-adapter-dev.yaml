@@ -72,6 +72,8 @@ spec:
         - application: azure-token-generator
           namespace: aura
           cluster: dev-gcp
+        - application: state-service
+          cluster: dev-gcp
   env:
     - name: NHN_BASE_URL
       value: "https://api.tjener.test.melding.nhn.no"

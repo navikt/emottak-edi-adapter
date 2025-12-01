@@ -1,4 +1,4 @@
-name: "Build and deploy edi-adapter-server to dev"
+name: "Build and deploy edi-adapter to dev"
 on:
   workflow_dispatch:
   push:
