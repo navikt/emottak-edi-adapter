@@ -1,5 +1,6 @@
 package no.nav.emottak.ediadapter.client
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -18,15 +19,12 @@ import no.nav.emottak.ediadapter.model.Message
 import no.nav.emottak.ediadapter.model.PostAppRecRequest
 import no.nav.emottak.ediadapter.model.PostMessageRequest
 import no.nav.emottak.ediadapter.model.StatusInfo
-import org.slf4j.LoggerFactory
 import kotlin.uuid.Uuid
 
 class EdiAdapterClient(
     private val ediAdapterUrl: String,
     clientProvider: () -> HttpClient
 ) {
-    val log = LoggerFactory.getLogger("no.nav.emottak.state.integration.ediadapter.EdiAdapterClient")
-
     private var httpClient = clientProvider.invoke()
 
     suspend fun getApprecInfo(id: Uuid): Pair<List<ApprecInfo>?, ErrorMessage?> {
