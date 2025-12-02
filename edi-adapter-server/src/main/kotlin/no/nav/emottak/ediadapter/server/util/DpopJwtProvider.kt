@@ -36,7 +36,7 @@ class DpopJwtProvider(
 ) {
     fun dpopProofWithoutNonce(): String =
         dpopProof(
-            config.azureAuth.tokenEndpoint,
+            config.nhnOAuth.tokenEndpoint,
             Post,
             null,
             null
@@ -44,7 +44,7 @@ class DpopJwtProvider(
 
     fun dpopProofWithNonce(nonce: Nonce): String =
         dpopProof(
-            config.azureAuth.tokenEndpoint,
+            config.nhnOAuth.tokenEndpoint,
             Post,
             nonce,
             null
@@ -69,12 +69,12 @@ class DpopJwtProvider(
                 mapOf(
                     "typ" to "client-authentication+jwt",
                     "alg" to "RS256",
-                    "kid" to config.azureAuth.keyId.value
+                    "kid" to config.nhnOAuth.keyId.value
                 )
             )
-            .withIssuer(config.azureAuth.clientId.value)
-            .withSubject(config.azureAuth.clientId.value)
-            .withAudience(config.azureAuth.audience.value)
+            .withIssuer(config.nhnOAuth.clientId.value)
+            .withSubject(config.nhnOAuth.clientId.value)
+            .withAudience(config.nhnOAuth.audience.value)
             .withJWTId(Uuid.random().toString())
             .withIssuedAt(from(now))
             .withExpiresAt(from(now.plusSeconds(60)))

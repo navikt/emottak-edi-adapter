@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  MODULE_NAME: "emottak-edi-adapter"
+  MODULE_NAME: "edi-adapter-server"
   NAIS_MANIFEST: "edi-adapter-dev.yaml"
 
 jobs:

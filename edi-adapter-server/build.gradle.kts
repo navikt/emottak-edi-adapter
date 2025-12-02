@@ -37,6 +37,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
 }
 
 dependencies {
+    api(project(":edi-adapter-model"))
     implementation(libs.arrow.core)
     implementation(libs.arrow.functions)
     implementation(libs.arrow.fx.coroutines)

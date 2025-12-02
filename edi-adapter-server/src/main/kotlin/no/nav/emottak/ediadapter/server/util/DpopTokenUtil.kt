@@ -48,16 +48,16 @@ class DpopTokenUtil(
     }
 
     private suspend fun tokenRequest(dpopProofWithNonce: String): HttpResponse =
-        httpTokenClient.post(config.azureAuth.tokenEndpoint.toString()) {
+        httpTokenClient.post(config.nhnOAuth.tokenEndpoint.toString()) {
             header(DPOP.value, dpopProofWithNonce)
             contentType(FormUrlEncoded)
             setBody(
                 Parameters.build {
-                    append("client_id", config.azureAuth.clientId.value)
-                    append("grant_type", config.azureAuth.grantType.value)
-                    append("scope", config.azureAuth.scope.value)
+                    append("client_id", config.nhnOAuth.clientId.value)
+                    append("grant_type", config.nhnOAuth.grantType.value)
+                    append("scope", config.nhnOAuth.scope.value)
                     append("client_assertion", jwtProvider.clientAssertion())
-                    append("client_assertion_type", config.azureAuth.clientAssertionType.value)
+                    append("client_assertion_type", config.nhnOAuth.clientAssertionType.value)
                 }
                     .formUrlEncode()
             )

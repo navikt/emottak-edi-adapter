@@ -9,6 +9,7 @@ private const val ID = "id"
 private const val MESSAGE_ID = "messageId"
 private const val HER_ID = "herId"
 private const val APP_REC_SENDER_HER_ID = "apprecSenderHerId"
+private const val RECEIVER_HER_IDS = "receiverHerIds"
 
 fun Raise<ValidationError>.messageId(call: ApplicationCall): String =
     call.parameters[MESSAGE_ID]!!.also {
@@ -24,6 +25,12 @@ fun Raise<ValidationError>.senderHerId(call: ApplicationCall): String =
     call.parameters[APP_REC_SENDER_HER_ID]!!.also {
         ensure(it.isNotBlank()) { SenderHerIdEmpty }
     }
+
+fun Raise<ValidationError>.receiverHerIds(call: ApplicationCall): List<String> =
+    ensureNotNull(call.request.queryParameters.getAll(RECEIVER_HER_IDS)) { ReceiverHerIdsMissing }
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .also { ensure(it.isNotEmpty()) { ReceiverHerIdsEmpty } }
 
 fun Raise<ValidationError>.messageIds(call: ApplicationCall): List<String> =
     ensureNotNull(call.request.queryParameters.getAll(ID)) { MessageIdsMissing }

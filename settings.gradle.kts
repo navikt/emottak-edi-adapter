@@ -23,7 +23,8 @@ dependencyResolutionManagement {
             version("prometheus", "1.12.4")
             version("logback", "1.5.19")
             version("logstash", "7.4")
-            version("emottak-utils", "0.3.3")
+            version("kotlinx-serialization", "1.9.0")
+            version("emottak-utils", "0.3.5.dev15")
 
             library("arrow-core", "io.arrow-kt", "arrow-core").versionRef("arrow")
             library("arrow-functions", "io.arrow-kt", "arrow-functions").versionRef("arrow")
@@ -66,6 +67,8 @@ dependencyResolutionManagement {
                 "no.nav.security",
                 "token-validation-ktor-v3"
             ).versionRef("token-validation-ktor")
+
+            library("kotlinx-serialization-json", "org.jetbrains.kotlinx", "kotlinx-serialization-json").versionRef("kotlinx-serialization")
 
             library("emottak-utils", "no.nav.emottak", "emottak-utils").versionRef("emottak-utils")
 
