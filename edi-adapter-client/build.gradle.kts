@@ -50,7 +50,7 @@ publishing {
         create<MavenPublication>("mavenJava") {
             groupId = "no.nav.emottak"
             artifactId = "edi-adapter-client"
-            version = "0.0.1-SNAPSHOT"
+            version = "0.0.1-SNAPSHOT-1"
             from(components["java"])
         }
     }
