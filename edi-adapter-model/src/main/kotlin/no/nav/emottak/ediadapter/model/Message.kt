@@ -1,6 +1,5 @@
 package no.nav.emottak.ediadapter.model
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 import kotlin.uuid.Uuid

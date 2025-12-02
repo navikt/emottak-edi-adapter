@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    kotlin("jvm") version "2.1.10"
+    kotlin("jvm")
     kotlin("plugin.serialization") version "2.1.10"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("maven-publish")
