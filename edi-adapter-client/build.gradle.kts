@@ -48,9 +48,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
-            groupId = "no.nav.emottak"
             artifactId = "edi-adapter-client"
-            version = "0.0.1-SNAPSHOT-1"
             from(components["java"])
         }
     }
