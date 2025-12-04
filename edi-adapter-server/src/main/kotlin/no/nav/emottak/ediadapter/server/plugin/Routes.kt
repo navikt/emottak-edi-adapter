@@ -9,6 +9,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType.Application.Json
+import io.ktor.http.HttpHeaders.Location
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.parametersOf
@@ -33,10 +34,11 @@ import no.nav.emottak.ediadapter.server.messageId
 import no.nav.emottak.ediadapter.server.receiverHerIds
 import no.nav.emottak.ediadapter.server.senderHerId
 import no.nav.emottak.ediadapter.server.toContent
-import no.nav.emottak.ediadapter.server.util.JsonUtil
+import kotlinx.serialization.json.Json as JsonUtil
 
 private const val RECEIVER_HER_IDS = "ReceiverHerIds"
-private const val LOCATION_FIELD_NAME = "locationUrl"
+const val UUID_FIELD_NAME = "uuid"
+const val LOCATION_FIELD_NAME = "locationUrl"
 
 fun Application.configureRoutes(
     ediClient: HttpClient,
@@ -132,7 +134,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 setBody(message)
             }
             call.respondText(
-                text = response.bodyAsTextExtended(),
+                text = response.ifCreatedAppendLocation(),
                 contentType = Json,
                 status = response.status
             )
@@ -149,7 +151,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                     setBody(appRec)
                 }
                 call.respondText(
-                    text = response.bodyAsTextExtended(),
+                    text = response.ifCreatedAppendLocation(),
                     contentType = Json,
                     status = response.status
                 )
@@ -171,13 +173,13 @@ fun Route.externalRoutes(ediClient: HttpClient) {
     }
 }
 
-suspend fun HttpResponse.bodyAsTextExtended(): String {
+suspend fun HttpResponse.ifCreatedAppendLocation(): String {
     if (this.status == HttpStatusCode.Created) {
-        val responseBody = this.bodyAsText()
-        val location =
-            this.headers["Location"] ?: throw IllegalStateException("Location header is missing in Created response")
-
-        return JsonUtil.extendJson(responseBody, mapOf(LOCATION_FIELD_NAME to location))
+        val jsonMap = mapOf(
+            UUID_FIELD_NAME to this.bodyAsText(),
+            LOCATION_FIELD_NAME to this.headers[Location],
+        )
+        return JsonUtil.encodeToString(jsonMap)
     }
 
     return this.bodyAsText()
