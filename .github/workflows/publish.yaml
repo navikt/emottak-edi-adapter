@@ -38,12 +38,21 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_USERNAME: x-access-token
 
+    - name: "Show edi-adapter-model version"
+      run: |
+        VERSION=$(grep 'version =' edi-adapter-model/build.gradle.kts | awk -F'"' '{print $2}')
+        echo "Publishing edi-adapter-model version: $VERSION"
     - name: "Publish edi-adapter-model to GitHub Packages"
       run: ./gradlew --stacktrace :edi-adapter-model:publish
       continue-on-error: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_USERNAME: x-access-token
+
+    - name: "Show edi-adapter-client version"
+      run: |
+        VERSION=$(grep 'version =' edi-adapter-client/build.gradle.kts | awk -F'"' '{print $2}')
+        echo "Publishing edi-adapter-model version: $VERSION"
     - name: "Publish edi-adapter-client to GitHub Packages"
       run: ./gradlew --stacktrace :edi-adapter-client:publish
       continue-on-error: true
