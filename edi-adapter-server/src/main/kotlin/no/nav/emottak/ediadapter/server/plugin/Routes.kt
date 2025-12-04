@@ -177,7 +177,7 @@ suspend fun HttpResponse.ifCreatedAppendLocation(): String {
     if (this.status == HttpStatusCode.Created) {
         val jsonMap = mapOf(
             UUID_FIELD_NAME to this.bodyAsText(),
-            LOCATION_FIELD_NAME to this.headers[Location],
+            LOCATION_FIELD_NAME to this.headers[Location]
         )
         return JsonUtil.encodeToString(jsonMap)
     }
