@@ -246,8 +246,8 @@ class RoutesSpec : StringSpec(
                 response.status shouldBe Created
                 val jsonMap: Map<String, String> = JsonUtil.decodeFromString(response.bodyAsText())
                 jsonMap.size shouldBe 2
-                jsonMap[UUID_FIELD_NAME] shouldBe newUuid.toString()
-                jsonMap[LOCATION_FIELD_NAME] shouldBe newLocation
+                jsonMap["id"] shouldBe newUuid.toString()
+                jsonMap["location"] shouldBe newLocation
             }
         }
 
@@ -297,8 +297,8 @@ class RoutesSpec : StringSpec(
                 response.status shouldBe Created
                 val jsonMap: Map<String, String> = JsonUtil.decodeFromString(response.bodyAsText())
                 jsonMap.size shouldBe 2
-                jsonMap[UUID_FIELD_NAME] shouldBe newUuid.toString()
-                jsonMap[LOCATION_FIELD_NAME] shouldBe newLocation
+                jsonMap["id"] shouldBe newUuid.toString()
+                jsonMap["location"] shouldBe newLocation
             }
         }
 
@@ -328,8 +328,8 @@ class RoutesSpec : StringSpec(
                 response.status shouldBe Created
                 val jsonMap: Map<String, String> = JsonUtil.decodeFromString(response.bodyAsText())
                 jsonMap.size shouldBe 2
-                jsonMap[UUID_FIELD_NAME] shouldBe newUuid.toString()
-                jsonMap[LOCATION_FIELD_NAME] shouldBe newLocation
+                jsonMap["id"] shouldBe newUuid.toString()
+                jsonMap["location"] shouldBe newLocation
             }
         }
 
@@ -388,8 +388,8 @@ class RoutesSpec : StringSpec(
                 response.status shouldBe Created
                 val jsonMap: Map<String, String> = JsonUtil.decodeFromString(response.bodyAsText())
                 jsonMap.size shouldBe 2
-                jsonMap[UUID_FIELD_NAME] shouldBe newUuid.toString()
-                jsonMap[LOCATION_FIELD_NAME] shouldBe newLocation
+                jsonMap["id"] shouldBe newUuid.toString()
+                jsonMap["location"] shouldBe newLocation
             }
         }
 

@@ -10,7 +10,6 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.HttpHeaders.Location
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.parametersOf
 import io.ktor.server.application.Application
@@ -25,6 +24,7 @@ import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import no.nav.emottak.ediadapter.model.Metadata
 import no.nav.emottak.ediadapter.model.PostAppRecRequest
 import no.nav.emottak.ediadapter.model.PostMessageRequest
 import no.nav.emottak.ediadapter.server.MessageError
@@ -34,11 +34,10 @@ import no.nav.emottak.ediadapter.server.messageId
 import no.nav.emottak.ediadapter.server.receiverHerIds
 import no.nav.emottak.ediadapter.server.senderHerId
 import no.nav.emottak.ediadapter.server.toContent
+import kotlin.uuid.Uuid
 import kotlinx.serialization.json.Json as JsonUtil
 
 private const val RECEIVER_HER_IDS = "ReceiverHerIds"
-const val UUID_FIELD_NAME = "uuid"
-const val LOCATION_FIELD_NAME = "locationUrl"
 
 fun Application.configureRoutes(
     ediClient: HttpClient,
@@ -134,7 +133,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                 setBody(message)
             }
             call.respondText(
-                text = response.ifCreatedAppendLocation(),
+                text = response.toMetadataResponse(),
                 contentType = Json,
                 status = response.status
             )
@@ -151,7 +150,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                     setBody(appRec)
                 }
                 call.respondText(
-                    text = response.ifCreatedAppendLocation(),
+                    text = response.toMetadataResponse(),
                     contentType = Json,
                     status = response.status
                 )
@@ -173,14 +172,16 @@ fun Route.externalRoutes(ediClient: HttpClient) {
     }
 }
 
-suspend fun HttpResponse.ifCreatedAppendLocation(): String {
-    if (this.status == HttpStatusCode.Created) {
-        val jsonMap = mapOf(
-            UUID_FIELD_NAME to this.bodyAsText(),
-            LOCATION_FIELD_NAME to this.headers[Location]
-        )
-        return JsonUtil.encodeToString(jsonMap)
-    }
+suspend fun HttpResponse.toMetadataResponse(): String {
+    val body = bodyAsText()
+    val location = headers[Location] ?: return body
 
-    return this.bodyAsText()
+    val id = Uuid.parse(body)
+
+    val metadata = Metadata(
+        id = id,
+        location = location
+    )
+
+    return JsonUtil.encodeToString(metadata)
 }
