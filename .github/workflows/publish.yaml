@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    name: "build"
+    name: "build-and-publish"
     runs-on: "ubuntu-24.04"
     permissions: 
         packages: write
@@ -26,13 +26,35 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/gradle.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
-    - name: "Build and tests"
+
+    - name: "Build and tests edi-adapter-model"
+      run: ./gradlew :edi-adapter-model:test  :edi-adapter-model:build
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_USERNAME: x-access-token
+    - name: "Build and tests edi-adapter-client"
       run: ./gradlew :edi-adapter-client:test  :edi-adapter-client:build
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_USERNAME: x-access-token
-    - name: Publish edi-adapter-client to GitHub Packages
-      run: ./gradlew --stacktrace publish
+
+    - name: "Show edi-adapter-model version"
+      run: |
+        VERSION=$(grep 'version =' edi-adapter-model/build.gradle.kts | awk -F'"' '{print $2}')
+        echo "Publishing edi-adapter-model version: $VERSION"
+    - name: "Publish edi-adapter-model to GitHub Packages"
+      run: ./gradlew --stacktrace :edi-adapter-model:publish
+      continue-on-error: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_USERNAME: x-access-token
+
+    - name: "Show edi-adapter-client version"
+      run: |
+        VERSION=$(grep 'version =' edi-adapter-client/build.gradle.kts | awk -F'"' '{print $2}')
+        echo "Publishing edi-adapter-model version: $VERSION"
+    - name: "Publish edi-adapter-client to GitHub Packages"
+      run: ./gradlew --stacktrace :edi-adapter-client:publish
       continue-on-error: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

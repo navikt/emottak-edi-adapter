@@ -4,10 +4,8 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.serialization") version "2.1.10"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
+    id("maven-publish")
 }
-
-group = "no.nav.emottak"
-version = "1.0-SNAPSHOT"
 
 dependencies {
     implementation(libs.kotlinx.serialization.json)
@@ -37,5 +35,25 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
         freeCompilerArgs = listOf(
             "-opt-in=kotlin.uuid.ExperimentalUuidApi,kotlin.time.ExperimentalTime"
         )
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            groupId = "no.nav.emottak"
+            artifactId = "edi-adapter-model"
+            version = "0.0.1"
+            from(components["java"])
+        }
+    }
+    repositories {
+        maven {
+            url = uri("https://maven.pkg.github.com/navikt/${rootProject.name}")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
