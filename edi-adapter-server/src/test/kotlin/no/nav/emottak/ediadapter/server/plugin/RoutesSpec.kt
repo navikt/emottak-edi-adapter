@@ -18,6 +18,7 @@ import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType.Application.Json
+import io.ktor.http.HttpHeaders.Location
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.NoContent
@@ -29,7 +30,6 @@ import io.ktor.http.contentType
 import io.ktor.http.fullPath
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.authenticate
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
@@ -43,7 +43,11 @@ import no.nav.security.token.support.v3.tokenValidationSupport
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.text.Charsets.UTF_8
+import kotlin.uuid.Uuid
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
+import kotlinx.serialization.json.Json as JsonUtil
+
+private const val MESSAGE1 = "https://example.com/messages/1"
 
 class RoutesSpec : StringSpec(
     {
@@ -194,10 +198,16 @@ class RoutesSpec : StringSpec(
         }
 
         "POST /messages forwards body to EDI" {
+            val newLocation = MESSAGE1
+            val newUuid = Uuid.random()
             val ediClient = fakeEdiClient { request ->
                 request.url.fullPath shouldBe "/Messages"
                 (request.body as TextContent).text shouldContain base64EncodedDocument()
-                respond("""{"result":"created"}""")
+                respond(
+                    content = newUuid.toString(),
+                    headers = headersOf(Location, newLocation),
+                    status = Created
+                )
             }
 
             testApplication {
@@ -233,8 +243,11 @@ class RoutesSpec : StringSpec(
                     setBody(message)
                 }
 
-                response.status shouldBe OK
-                response.bodyAsText() shouldBe """{"result":"created"}"""
+                response.status shouldBe Created
+                val jsonMap: Map<String, String> = JsonUtil.decodeFromString(response.bodyAsText())
+                jsonMap.size shouldBe 2
+                jsonMap[UUID_FIELD_NAME] shouldBe newUuid.toString()
+                jsonMap[LOCATION_FIELD_NAME] shouldBe newLocation
             }
         }
 
@@ -253,11 +266,13 @@ class RoutesSpec : StringSpec(
         }
 
         "POST /messages fetches Location header when EDI responds with Created" {
-            val newObjectLocation = "/Messages/1234"
+            val newLocation = MESSAGE1
+            val newUuid = Uuid.random()
             val ediClient = fakeEdiClient { request ->
+                request.url.fullPath shouldBe "/Messages"
                 respond(
-                    content = """{"result":"created"}""",
-                    headers = headersOf("Location", newObjectLocation),
+                    content = newUuid.toString(),
+                    headers = headersOf(Location, newLocation),
                     status = Created
                 )
             }
@@ -268,9 +283,9 @@ class RoutesSpec : StringSpec(
                 val message =
                     """
                 {
-                  "messageType":"HealthInformation",
-                  "recipient":"mottak-qass@test-es.nav.no",
-                  "businessDocument": ${base64EncodedDocument()}
+                  "businessDocument": ${base64EncodedDocument()},
+                  "contentType": "application/xml",
+                  "contentTransferEncoding": "base64"
                 }
                 """
 
@@ -280,15 +295,24 @@ class RoutesSpec : StringSpec(
                 }
 
                 response.status shouldBe Created
-                response.bodyAsText() shouldContain newObjectLocation
+                val jsonMap: Map<String, String> = JsonUtil.decodeFromString(response.bodyAsText())
+                jsonMap.size shouldBe 2
+                jsonMap[UUID_FIELD_NAME] shouldBe newUuid.toString()
+                jsonMap[LOCATION_FIELD_NAME] shouldBe newLocation
             }
         }
 
         "POST /messages/{id}/apprec/{sender} forwards body" {
+            val newLocation = MESSAGE1
+            val newUuid = Uuid.random()
             val ediClient = fakeEdiClient { request ->
                 request.url.fullPath shouldBe "/Messages/77/apprec/8142"
                 (request.body as TextContent).text shouldContain "1"
-                respond("""{"status":"ok"}""")
+                respond(
+                    content = newUuid.toString(),
+                    headers = headersOf(Location, newLocation),
+                    status = Created
+                )
             }
 
             testApplication {
@@ -301,8 +325,11 @@ class RoutesSpec : StringSpec(
                     setBody(apprecBody)
                 }
 
-                response.status shouldBe OK
-                response.bodyAsText() shouldBe """{"status":"ok"}"""
+                response.status shouldBe Created
+                val jsonMap: Map<String, String> = JsonUtil.decodeFromString(response.bodyAsText())
+                jsonMap.size shouldBe 2
+                jsonMap[UUID_FIELD_NAME] shouldBe newUuid.toString()
+                jsonMap[LOCATION_FIELD_NAME] shouldBe newLocation
             }
         }
 
@@ -337,11 +364,13 @@ class RoutesSpec : StringSpec(
         }
 
         "POST /messages/{messageId}/apprec/{apprecSenderHerId} fetches Location header when EDI responds with Created" {
-            val newObjectLocation = "/Messages/1234/apprec/5678"
+            val newLocation = MESSAGE1
+            val newUuid = Uuid.random()
             val ediClient = fakeEdiClient { request ->
+                request.url.fullPath shouldBe "/Messages/1234/apprec/5678"
                 respond(
-                    content = """{"result":"created"}""",
-                    headers = headersOf("Location", newObjectLocation),
+                    content = newUuid.toString(),
+                    headers = headersOf(Location, newLocation),
                     status = Created
                 )
             }
@@ -357,7 +386,10 @@ class RoutesSpec : StringSpec(
                 }
 
                 response.status shouldBe Created
-                response.bodyAsText() shouldContain newObjectLocation
+                val jsonMap: Map<String, String> = JsonUtil.decodeFromString(response.bodyAsText())
+                jsonMap.size shouldBe 2
+                jsonMap[UUID_FIELD_NAME] shouldBe newUuid.toString()
+                jsonMap[LOCATION_FIELD_NAME] shouldBe newLocation
             }
         }
 
