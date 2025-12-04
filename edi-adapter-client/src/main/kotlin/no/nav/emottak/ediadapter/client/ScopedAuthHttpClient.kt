@@ -14,7 +14,6 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import no.nav.emottak.ediadapter.client.getEnvVar
 import java.net.InetSocketAddress
 import java.net.Proxy
 import java.net.URI
