@@ -12,5 +12,6 @@ data class Message constructor(
     val senderHerId: Int? = null,
     val businessDocumentId: String? = null,
     val businessDocumentGenDate: Instant? = null,
-    val isAppRec: Boolean? = null
+    val isAppRec: Boolean? = null,
+    val sourceSystem: String? = null
 )

@@ -7,6 +7,6 @@ data class PostMessageRequest(
     val businessDocument: String,
     val contentType: String,
     val contentTransferEncoding: String,
-    val ebXmlOverrides: EbXmlInfo,
+    val ebXmlOverrides: EbXmlInfo? = null,
     val receiverHerIdsSubset: List<Int>? = null
 )
