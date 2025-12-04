@@ -53,7 +53,7 @@ spec:
       cpu: "200m"
       memory: "512Mi"
   ingresses:
-    - "https://edi-transport.intern.dev.nav.no"
+    - "https://edi-adapter.intern.dev.nav.no"
   filesFrom:
     - secret: emottak-nhn-edi
       mountPath: /var/run/secrets/emottak-nhn-edi
