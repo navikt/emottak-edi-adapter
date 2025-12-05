@@ -18,6 +18,7 @@ import no.nav.emottak.ediadapter.model.ErrorMessage
 import no.nav.emottak.ediadapter.model.GetBusinessDocumentResponse
 import no.nav.emottak.ediadapter.model.GetMessagesRequest
 import no.nav.emottak.ediadapter.model.Message
+import no.nav.emottak.ediadapter.model.Metadata
 import no.nav.emottak.ediadapter.model.PostAppRecRequest
 import no.nav.emottak.ediadapter.model.PostMessageRequest
 import no.nav.emottak.ediadapter.model.StatusInfo
@@ -49,7 +50,7 @@ class EdiAdapterClient(
         return handleResponse(response)
     }
 
-    suspend fun postMessage(postMessagesRequest: PostMessageRequest): Pair<String?, ErrorMessage?> {
+    suspend fun postMessage(postMessagesRequest: PostMessageRequest): Pair<Metadata?, ErrorMessage?> {
         val url = "$ediAdapterUrl/api/v1/messages"
         val response = httpClient.post(url) {
             contentType(ContentType.Application.Json)
@@ -86,7 +87,7 @@ class EdiAdapterClient(
         return handleResponse(response)
     }
 
-    suspend fun postApprec(id: Uuid, apprecSenderHerId: Int, postAppRecRequest: PostAppRecRequest): Pair<String?, ErrorMessage?> {
+    suspend fun postApprec(id: Uuid, apprecSenderHerId: Int, postAppRecRequest: PostAppRecRequest): Pair<Metadata?, ErrorMessage?> {
         val url = "$ediAdapterUrl/api/v1/messages/$id/apprec/$apprecSenderHerId"
         val response = httpClient.post(url) {
             contentType(ContentType.Application.Json)
