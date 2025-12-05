@@ -54,7 +54,7 @@ class EdiAdapterClientSpec : StringSpec(
                     respond(
                         content = JsonUtil.encodeToString(existingMessage),
                         headers = headersOf(ContentType, Json.toString()),
-                        status = HttpStatusCode.OK,
+                        status = HttpStatusCode.OK
                     )
                 }
             }
@@ -73,7 +73,7 @@ class EdiAdapterClientSpec : StringSpec(
                 errorCode = 1000,
                 validationErrors = listOf("Example error"),
                 stackTrace = "[StackTrace]",
-                requestId = Uuid.random().toString(),
+                requestId = Uuid.random().toString()
             )
             val ediClient = ediAdapterClient {
                 fakeScopedAuthHttpClient { request ->
@@ -83,7 +83,7 @@ class EdiAdapterClientSpec : StringSpec(
                     respond(
                         content = JsonUtil.encodeToString(errorMessageStub),
                         headers = headersOf(ContentType, Json.toString()),
-                        status = HttpStatusCode.NotFound,
+                        status = HttpStatusCode.NotFound
                     )
                 }
             }
@@ -108,7 +108,7 @@ class EdiAdapterClientSpec : StringSpec(
                     respond(
                         content = JsonUtil.encodeToString(metadataStub),
                         headers = headersOf(ContentType, Json.toString()),
-                        status = HttpStatusCode.Created,
+                        status = HttpStatusCode.Created
                     )
                 }
             }
@@ -131,7 +131,7 @@ class EdiAdapterClientSpec : StringSpec(
                 errorCode = 1000,
                 validationErrors = listOf("Example error"),
                 stackTrace = "[StackTrace]",
-                requestId = Uuid.random().toString(),
+                requestId = Uuid.random().toString()
             )
             val ediClient = ediAdapterClient {
                 fakeScopedAuthHttpClient { request ->
@@ -141,7 +141,7 @@ class EdiAdapterClientSpec : StringSpec(
                     respond(
                         content = JsonUtil.encodeToString(errorMessageStub),
                         headers = headersOf(ContentType, Json.toString()),
-                        status = HttpStatusCode.BadRequest,
+                        status = HttpStatusCode.BadRequest
                     )
                 }
             }
