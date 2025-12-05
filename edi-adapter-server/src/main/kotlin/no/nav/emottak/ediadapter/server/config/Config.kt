@@ -1,8 +1,8 @@
 package no.nav.emottak.ediadapter.server.config
 
 import io.ktor.client.plugins.logging.LogLevel
-import no.nav.emottak.utils.config.Server
 import java.net.URI
+import kotlin.time.Duration
 
 data class Config(
     val nhn: Nhn,
@@ -12,6 +12,14 @@ data class Config(
     val httpTokenClient: HttpTokenClient,
     val azureAuth: AzureAuth
 )
+
+data class Server(
+    val port: Port,
+    val preWait: Duration
+)
+
+@JvmInline
+value class Port(val value: Int)
 
 data class Nhn(
     val baseUrl: URI,
