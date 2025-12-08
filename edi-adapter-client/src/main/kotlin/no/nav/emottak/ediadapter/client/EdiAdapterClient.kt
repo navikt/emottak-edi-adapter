@@ -26,8 +26,8 @@ import kotlin.uuid.Uuid
 private val log = KotlinLogging.logger {}
 
 class EdiAdapterClient(
-    private val ediAdapterUrl: String,
-    clientProvider: () -> HttpClient
+    clientProvider: () -> HttpClient,
+    private val ediAdapterUrl: String = config().ediAdapterServer.url.toString()
 ) {
     private var httpClient = clientProvider.invoke()
 
@@ -86,7 +86,11 @@ class EdiAdapterClient(
         return handleResponse(response)
     }
 
-    suspend fun postApprec(id: Uuid, apprecSenderHerId: Int, postAppRecRequest: PostAppRecRequest): Pair<String?, ErrorMessage?> {
+    suspend fun postApprec(
+        id: Uuid,
+        apprecSenderHerId: Int,
+        postAppRecRequest: PostAppRecRequest
+    ): Pair<String?, ErrorMessage?> {
         val url = "$ediAdapterUrl/api/v1/messages/$id/apprec/$apprecSenderHerId"
         val response = httpClient.post(url) {
             contentType(ContentType.Application.Json)

@@ -1,11 +1,13 @@
 package no.nav.emottak.ediadapter.client
 
+import java.net.URL
 import java.time.Duration
 
 internal data class Config(
     val auth: AzureAuth,
     val httpClient: HttpClient,
-    val httpTokenClient: HttpClient
+    val httpTokenClient: HttpClient,
+    val ediAdapterServer: EdiAdapterServer
 ) {
     data class AzureAuth(
         val azureGrantType: AzureGrantType,
@@ -28,5 +30,9 @@ internal data class Config(
 
     data class HttpClient(
         val connectionTimeout: Duration
+    )
+
+    data class EdiAdapterServer(
+        val url: URL
     )
 }
