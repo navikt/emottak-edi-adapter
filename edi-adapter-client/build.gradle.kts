@@ -9,6 +9,9 @@ plugins {
 
 dependencies {
     api(project(":edi-adapter-model"))
+    implementation(libs.arrow.functions)
+    implementation(libs.hoplite.core)
+    implementation(libs.hoplite.hocon)
     implementation(libs.ktor.client.core)
     implementation(libs.nimbus.jwt)
     implementation(libs.ktor.client.cio)

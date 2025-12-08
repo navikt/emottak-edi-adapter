@@ -1,86 +1,63 @@
 package no.nav.emottak.ediadapter.client
 
-import com.nimbusds.jwt.SignedJWT
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.header
-import io.ktor.client.request.headers
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
+import io.ktor.client.request.forms.submitForm
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.parameters
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import java.net.InetSocketAddress
-import java.net.Proxy
-import java.net.URI
-import kotlin.let
-import kotlin.text.isNotBlank
+import no.nav.emottak.ediadapter.client.Config.AzureAuth
 
-fun scopedAuthHttpClient(
+fun scopedAuthHttpClient(scope: String): () -> HttpClient = { httpClient(httpTokenClient(), scope) }
+
+private fun httpTokenClient(): HttpClient =
+    HttpClient(CIO) {
+        install(HttpTimeout) {
+            connectTimeoutMillis = config().httpTokenClient.connectionTimeout.toMillis()
+        }
+        install(ContentNegotiation) {
+            json(Json { ignoreUnknownKeys = true })
+        }
+    }
+
+private fun httpClient(
+    tokenClient: HttpClient,
     scope: String
-): () -> HttpClient {
-    return {
-        HttpClient(CIO) {
-            install(ContentNegotiation) {
-                json(
-                    Json {
-                        ignoreUnknownKeys = true
-                    }
-                )
-            }
-            install(Auth) {
-                bearer {
-                    refreshTokens {
-                        proxiedHttpClient().post(
-                            getEnvVar(
-                                "AZURE_OPENID_CONFIG_TOKEN_ENDPOINT",
-                                "http://localhost:3344/AZURE_AD/token"
-                            )
-                        ) {
-                            headers {
-                                header("Content-Type", "application/x-www-form-urlencoded")
-                            }
-                            setBody(
-                                "client_id=" + getEnvVar("AZURE_APP_CLIENT_ID", "dummyclient") +
-                                    "&client_secret=" + getEnvVar("AZURE_APP_CLIENT_SECRET", "dummysecret") +
-                                    "&scope=" + scope +
-                                    "&grant_type=client_credentials"
-                            )
-                        }.bodyAsText()
-                            .let { tokenResponseString ->
-                                SignedJWT.parse(
-                                    LENIENT_JSON_PARSER.decodeFromString<Map<String, String>>(tokenResponseString)["access_token"] as String
-                                )
-                            }
-                            .let { parsedJwt ->
-                                BearerTokens(parsedJwt.serialize(), "refresh token is unused")
-                            }
-                    }
-                    sendWithoutRequest {
-                        true
-                    }
+): HttpClient =
+    HttpClient(CIO) {
+        install(HttpTimeout) {
+            connectTimeoutMillis = config().httpClient.connectionTimeout.toMillis()
+        }
+        install(ContentNegotiation) { json() }
+        install(Auth) {
+            bearer {
+                refreshTokens {
+                    val tokenInfo: TokenInfo = submitTokenForm(tokenClient, config().auth, scope).body()
+                    BearerTokens(tokenInfo.accessToken, null)
                 }
+                sendWithoutRequest { true }
             }
         }
     }
-}
 
-private fun proxiedHttpClient() = HttpClient(CIO) {
-    engine {
-        val httpProxyUrl = getEnvVar("HTTP_PROXY", "")
-        if (httpProxyUrl.isNotBlank()) {
-            proxy = Proxy(
-                Proxy.Type.HTTP,
-                InetSocketAddress(URI(httpProxyUrl).toURL().host, URI(httpProxyUrl).toURL().port)
-            )
+private suspend fun submitTokenForm(
+    tokenClient: HttpClient,
+    auth: AzureAuth,
+    scope: String
+): HttpResponse =
+    tokenClient.submitForm(
+        url = auth.azureTokenEndpoint.value,
+        formParameters = parameters {
+            append("client_id", auth.azureAppClientId.value)
+            append("client_secret", auth.azureAppClientSecret.value)
+            append("grant_type", auth.azureGrantType.value)
+            append("scope", scope)
         }
-    }
-}
-
-val LENIENT_JSON_PARSER = Json {
-    isLenient = true
-}
+    )
