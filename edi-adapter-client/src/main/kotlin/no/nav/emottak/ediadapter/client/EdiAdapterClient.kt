@@ -109,6 +109,8 @@ class EdiAdapterClient(
         }
     }
 
+    fun close() = httpClient.close()
+
     private suspend inline fun <reified T> handleResponse(httpResponse: HttpResponse): Pair<T?, ErrorMessage?> {
         return if (httpResponse.status == HttpStatusCode.OK || httpResponse.status == HttpStatusCode.Created) {
             Pair(httpResponse.body(), null)
