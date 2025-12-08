@@ -1,5 +1,7 @@
 package no.nav.emottak.ediadapter.client
 
+import java.time.Duration
+
 data class Config(
     val auth: AzureAuth,
     val httpClient: HttpClient,
@@ -25,9 +27,6 @@ data class Config(
     }
 
     data class HttpClient(
-        val connectionTimeout: Timeout
-    ) {
-        @JvmInline
-        value class Timeout(val value: Long)
-    }
+        val connectionTimeout: Duration
+    )
 }

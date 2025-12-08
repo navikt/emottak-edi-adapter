@@ -20,7 +20,7 @@ fun scopedAuthHttpClient(scope: String): () -> HttpClient = { httpClient(httpTok
 private fun httpTokenClient(): HttpClient =
     HttpClient(CIO) {
         install(HttpTimeout) {
-            connectTimeoutMillis = config().httpTokenClient.connectionTimeout.value
+            connectTimeoutMillis = config().httpTokenClient.connectionTimeout.toMillis()
         }
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true })
@@ -33,7 +33,7 @@ private fun httpClient(
 ): HttpClient =
     HttpClient(CIO) {
         install(HttpTimeout) {
-            connectTimeoutMillis = config().httpClient.connectionTimeout.value
+            connectTimeoutMillis = config().httpClient.connectionTimeout.toMillis()
         }
         install(ContentNegotiation) { json() }
         install(Auth) {
