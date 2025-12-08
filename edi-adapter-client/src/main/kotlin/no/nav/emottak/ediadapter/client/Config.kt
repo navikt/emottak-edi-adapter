@@ -2,7 +2,7 @@ package no.nav.emottak.ediadapter.client
 
 import java.time.Duration
 
-data class Config(
+internal data class Config(
     val auth: AzureAuth,
     val httpClient: HttpClient,
     val httpTokenClient: HttpClient
