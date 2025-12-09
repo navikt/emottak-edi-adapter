@@ -17,8 +17,10 @@ import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType.Application.Json
+import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.http.HttpHeaders.Location
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.Created
@@ -34,17 +36,17 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.authenticate
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.routing.Route
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.TestApplicationBuilder
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import no.nav.emottak.ediadapter.model.Metadata
-import no.nav.emottak.ediadapter.server.auth.AuthConfig
+import no.nav.emottak.ediadapter.server.auth.AuthConfig.Companion.getTokenSupportConfig
 import no.nav.emottak.ediadapter.server.config
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.token.support.v3.tokenValidationSupport
 import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.text.Charsets.UTF_8
 import kotlin.uuid.Uuid
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
@@ -483,33 +485,44 @@ class RoutesSpec : StringSpec(
     }
 )
 
-private fun ApplicationTestBuilder.createJsonEnabledClient(): HttpClient = createClient {
-    install(ClientContentNegotiation) {
-        json()
-    }
-}
-
-private fun TestApplicationBuilder.installExternalRoutes(ediClient: HttpClient, useAuthentication: Boolean = false) {
-    install(ContentNegotiation) { json() }
-    if (useAuthentication) {
-        install(Authentication) {
-            tokenValidationSupport(config().azureAuth.issuer.value, AuthConfig.getTokenSupportConfig())
+private fun ApplicationTestBuilder.createJsonEnabledClient(): HttpClient =
+    createClient {
+        install(ClientContentNegotiation) {
+            json()
         }
     }
+
+private fun TestApplicationBuilder.installExternalRoutes(
+    ediClient: HttpClient,
+    useAuthentication: Boolean = false
+) {
+    install(ContentNegotiation) { json() }
+
+    val issuer = config().azureAuth.issuer.value
+
+    if (useAuthentication) {
+        install(Authentication) {
+            tokenValidationSupport(
+                issuer,
+                getTokenSupportConfig()
+            )
+        }
+    }
+
     routing {
+        val externalRoutes: Route.() -> Unit = { externalRoutes(ediClient) }
+
         if (useAuthentication) {
-            authenticate(config().azureAuth.issuer.value) {
-                externalRoutes(ediClient)
-            }
+            authenticate(issuer, build = externalRoutes)
         } else {
-            externalRoutes(ediClient)
+            externalRoutes(this)
         }
     }
 }
 
 private fun fakeEdiClient(
     handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData
-) = HttpClient(MockEngine) {
+): HttpClient = HttpClient(MockEngine) {
     engine {
         addHandler(handler)
     }
@@ -523,23 +536,25 @@ private fun fakeEdiClient(
     }
 }
 
-@OptIn(ExperimentalEncodingApi::class)
-private fun base64EncodedDocument(): String =
-    Base64.encode(
-        """"<MsgHead><Body>hello world</Body></MsgHead>""""
-            .trimIndent()
-            .toByteArray(UTF_8)
-    )
-
-suspend fun HttpClient.getWithAuth(
+private suspend fun HttpClient.getWithAuth(
     url: String,
     getToken: (String) -> SignedJWT,
     audience: String = config().azureAuth.appScope.value
-): io.ktor.client.statement.HttpResponse {
-    return this.get(url) {
+): HttpResponse =
+    get(url) {
         header(
-            "Authorization",
+            Authorization,
             "Bearer ${getToken(audience).serialize()}"
         )
     }
-}
+
+private fun base64EncodedDocument(): String =
+    Base64.encode(
+        """
+            <MsgHead>
+                <Body>hello world</Body>
+            </MsgHead>
+        """
+            .trimIndent()
+            .toByteArray(UTF_8)
+    )
