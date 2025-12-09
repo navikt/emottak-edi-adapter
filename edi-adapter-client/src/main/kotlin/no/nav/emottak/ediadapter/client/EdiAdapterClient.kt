@@ -26,13 +26,37 @@ import kotlin.uuid.Uuid
 
 private val log = KotlinLogging.logger {}
 
-class EdiAdapterClient(
+interface EdiAdapterClient {
+    suspend fun getApprecInfo(id: Uuid): Pair<List<ApprecInfo>?, ErrorMessage?>
+
+    suspend fun getMessages(getMessagesRequest: GetMessagesRequest): Pair<List<Message>?, ErrorMessage?>
+
+    suspend fun postMessage(postMessagesRequest: PostMessageRequest): Pair<Metadata?, ErrorMessage?>
+
+    suspend fun getMessage(id: Uuid): Pair<Message?, ErrorMessage?>
+
+    suspend fun getBusinessDocument(id: Uuid): Pair<GetBusinessDocumentResponse?, ErrorMessage?>
+
+    suspend fun getMessageStatus(id: Uuid): Pair<List<StatusInfo>?, ErrorMessage?>
+
+    suspend fun postApprec(
+        id: Uuid,
+        apprecSenderHerId: Int,
+        postAppRecRequest: PostAppRecRequest
+    ): Pair<Metadata?, ErrorMessage?>
+
+    suspend fun markMessageAsRead(id: Uuid, herId: Int): Pair<Boolean?, ErrorMessage?>
+
+    fun close()
+}
+
+class HttpEdiAdapterClient(
     clientProvider: () -> HttpClient,
     private val ediAdapterUrl: String = config().ediAdapterServer.url.toString()
-) {
+) : EdiAdapterClient {
     private var httpClient = clientProvider.invoke()
 
-    suspend fun getApprecInfo(id: Uuid): Pair<List<ApprecInfo>?, ErrorMessage?> {
+    override suspend fun getApprecInfo(id: Uuid): Pair<List<ApprecInfo>?, ErrorMessage?> {
         val url = "$ediAdapterUrl/api/v1/messages/$id/apprec"
         val response = httpClient.get(url) {
             contentType(ContentType.Application.Json)
@@ -41,7 +65,7 @@ class EdiAdapterClient(
         return handleResponse(response)
     }
 
-    suspend fun getMessages(getMessagesRequest: GetMessagesRequest): Pair<List<Message>?, ErrorMessage?> {
+    override suspend fun getMessages(getMessagesRequest: GetMessagesRequest): Pair<List<Message>?, ErrorMessage?> {
         val url = "$ediAdapterUrl/api/v1/messages?${getMessagesRequest.toUrlParams()}"
         val response = httpClient.get(url) {
             contentType(ContentType.Application.Json)
@@ -50,7 +74,7 @@ class EdiAdapterClient(
         return handleResponse(response)
     }
 
-    suspend fun postMessage(postMessagesRequest: PostMessageRequest): Pair<Metadata?, ErrorMessage?> {
+    override suspend fun postMessage(postMessagesRequest: PostMessageRequest): Pair<Metadata?, ErrorMessage?> {
         val url = "$ediAdapterUrl/api/v1/messages"
         val response = httpClient.post(url) {
             contentType(ContentType.Application.Json)
@@ -60,7 +84,7 @@ class EdiAdapterClient(
         return handleResponse(response)
     }
 
-    suspend fun getMessage(id: Uuid): Pair<Message?, ErrorMessage?> {
+    override suspend fun getMessage(id: Uuid): Pair<Message?, ErrorMessage?> {
         val url = "$ediAdapterUrl/api/v1/messages/$id"
         val response = httpClient.get(url) {
             contentType(ContentType.Application.Json)
@@ -69,7 +93,7 @@ class EdiAdapterClient(
         return handleResponse(response)
     }
 
-    suspend fun getBusinessDocument(id: Uuid): Pair<GetBusinessDocumentResponse?, ErrorMessage?> {
+    override suspend fun getBusinessDocument(id: Uuid): Pair<GetBusinessDocumentResponse?, ErrorMessage?> {
         val url = "$ediAdapterUrl/api/v1/messages/$id/document"
         val response = httpClient.get(url) {
             contentType(ContentType.Application.Json)
@@ -78,7 +102,7 @@ class EdiAdapterClient(
         return handleResponse(response)
     }
 
-    suspend fun getMessageStatus(id: Uuid): Pair<List<StatusInfo>?, ErrorMessage?> {
+    override suspend fun getMessageStatus(id: Uuid): Pair<List<StatusInfo>?, ErrorMessage?> {
         val url = "$ediAdapterUrl/api/v1/messages/$id/status"
         val response = httpClient.get(url) {
             contentType(ContentType.Application.Json)
@@ -87,7 +111,7 @@ class EdiAdapterClient(
         return handleResponse(response)
     }
 
-    suspend fun postApprec(
+    override suspend fun postApprec(
         id: Uuid,
         apprecSenderHerId: Int,
         postAppRecRequest: PostAppRecRequest
@@ -101,7 +125,7 @@ class EdiAdapterClient(
         return handleResponse(response)
     }
 
-    suspend fun markMessageAsRead(id: Uuid, herId: Int): Pair<Boolean?, ErrorMessage?> {
+    override suspend fun markMessageAsRead(id: Uuid, herId: Int): Pair<Boolean?, ErrorMessage?> {
         val url = "$ediAdapterUrl/api/v1/messages/$id/read/$herId"
         val response = httpClient.put(url) {
             contentType(ContentType.Application.Json)
@@ -114,7 +138,7 @@ class EdiAdapterClient(
         }
     }
 
-    fun close() = httpClient.close()
+    override fun close() = httpClient.close()
 
     private suspend inline fun <reified T> handleResponse(httpResponse: HttpResponse): Pair<T?, ErrorMessage?> {
         return if (httpResponse.status == HttpStatusCode.OK || httpResponse.status == HttpStatusCode.Created) {
