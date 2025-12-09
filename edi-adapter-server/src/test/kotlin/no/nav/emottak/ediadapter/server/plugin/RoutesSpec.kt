@@ -6,6 +6,7 @@ import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
@@ -18,7 +19,9 @@ import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType.Application.Json
+import io.ktor.http.HttpHeaders.Location
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
+import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.NoContent
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
@@ -26,14 +29,16 @@ import io.ktor.http.HttpStatusCode.Companion.Unauthorized
 import io.ktor.http.content.TextContent
 import io.ktor.http.contentType
 import io.ktor.http.fullPath
+import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.authenticate
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.TestApplicationBuilder
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
+import no.nav.emottak.ediadapter.model.Metadata
 import no.nav.emottak.ediadapter.server.auth.AuthConfig
 import no.nav.emottak.ediadapter.server.config
 import no.nav.security.mock.oauth2.MockOAuth2Server
@@ -41,7 +46,10 @@ import no.nav.security.token.support.v3.tokenValidationSupport
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.text.Charsets.UTF_8
+import kotlin.uuid.Uuid
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
+
+private const val MESSAGE1 = "https://example.com/messages/1"
 
 class RoutesSpec : StringSpec(
     {
@@ -192,14 +200,21 @@ class RoutesSpec : StringSpec(
         }
 
         "POST /messages forwards body to EDI" {
+            val newLocation = MESSAGE1
+            val newUuid = Uuid.random()
             val ediClient = fakeEdiClient { request ->
                 request.url.fullPath shouldBe "/Messages"
                 (request.body as TextContent).text shouldContain base64EncodedDocument()
-                respond("""{"result":"created"}""")
+                respond(
+                    content = newUuid.toString(),
+                    headers = headersOf(Location, newLocation),
+                    status = Created
+                )
             }
 
             testApplication {
                 installExternalRoutes(ediClient)
+                client = createJsonEnabledClient()
 
                 val message =
                     """
@@ -231,8 +246,10 @@ class RoutesSpec : StringSpec(
                     setBody(message)
                 }
 
-                response.status shouldBe OK
-                response.bodyAsText() shouldBe """{"result":"created"}"""
+                response.status shouldBe Created
+                val metadata = response.body<Metadata>()
+                metadata.id shouldBe newUuid
+                metadata.location shouldBe newLocation
             }
         }
 
@@ -250,15 +267,59 @@ class RoutesSpec : StringSpec(
             }
         }
 
-        "POST /messages/{id}/apprec/{sender} forwards body" {
+        "POST /messages fetches Location header when EDI responds with Created" {
+            val newLocation = MESSAGE1
+            val newUuid = Uuid.random()
             val ediClient = fakeEdiClient { request ->
-                request.url.fullPath shouldBe "/Messages/77/apprec/8142"
-                (request.body as TextContent).text shouldContain "1"
-                respond("""{"status":"ok"}""")
+                request.url.fullPath shouldBe "/Messages"
+                respond(
+                    content = newUuid.toString(),
+                    headers = headersOf(Location, newLocation),
+                    status = Created
+                )
             }
 
             testApplication {
                 installExternalRoutes(ediClient)
+                client = createJsonEnabledClient()
+
+                val message =
+                    """
+                {
+                  "businessDocument": ${base64EncodedDocument()},
+                  "contentType": "application/xml",
+                  "contentTransferEncoding": "base64"
+                }
+                """
+
+                val response = client.post("/api/v1/messages") {
+                    contentType(Json)
+                    setBody(message)
+                }
+
+                response.status shouldBe Created
+                val metadata = response.body<Metadata>()
+                metadata.id shouldBe newUuid
+                metadata.location shouldBe newLocation
+            }
+        }
+
+        "POST /messages/{id}/apprec/{sender} forwards body" {
+            val newLocation = MESSAGE1
+            val newUuid = Uuid.random()
+            val ediClient = fakeEdiClient { request ->
+                request.url.fullPath shouldBe "/Messages/77/apprec/8142"
+                (request.body as TextContent).text shouldContain "1"
+                respond(
+                    content = newUuid.toString(),
+                    headers = headersOf(Location, newLocation),
+                    status = Created
+                )
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+                client = createJsonEnabledClient()
 
                 val apprecBody = """{ "appRecStatus":"1", "appRecErrorList":[] }"""
 
@@ -267,8 +328,10 @@ class RoutesSpec : StringSpec(
                     setBody(apprecBody)
                 }
 
-                response.status shouldBe OK
-                response.bodyAsText() shouldBe """{"status":"ok"}"""
+                response.status shouldBe Created
+                val metadata = response.body<Metadata>()
+                metadata.id shouldBe newUuid
+                metadata.location shouldBe newLocation
             }
         }
 
@@ -299,6 +362,36 @@ class RoutesSpec : StringSpec(
                     setBody("""{"status":"1"}""")
                 }
                 response.status shouldBe NotFound
+            }
+        }
+
+        "POST /messages/{messageId}/apprec/{apprecSenderHerId} fetches Location header when EDI responds with Created" {
+            val newLocation = MESSAGE1
+            val newUuid = Uuid.random()
+            val ediClient = fakeEdiClient { request ->
+                request.url.fullPath shouldBe "/Messages/1234/apprec/5678"
+                respond(
+                    content = newUuid.toString(),
+                    headers = headersOf(Location, newLocation),
+                    status = Created
+                )
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+                client = createJsonEnabledClient()
+
+                val apprecBody = """{ "appRecStatus":"1", "appRecErrorList":[] }"""
+
+                val response = client.post("/api/v1/messages/1234/apprec/5678") {
+                    contentType(Json)
+                    setBody(apprecBody)
+                }
+
+                response.status shouldBe Created
+                val metadata = response.body<Metadata>()
+                metadata.id shouldBe newUuid
+                metadata.location shouldBe newLocation
             }
         }
 
@@ -389,6 +482,12 @@ class RoutesSpec : StringSpec(
         }
     }
 )
+
+private fun ApplicationTestBuilder.createJsonEnabledClient(): HttpClient = createClient {
+    install(ClientContentNegotiation) {
+        json()
+    }
+}
 
 private fun TestApplicationBuilder.installExternalRoutes(ediClient: HttpClient, useAuthentication: Boolean = false) {
     install(ContentNegotiation) { json() }
