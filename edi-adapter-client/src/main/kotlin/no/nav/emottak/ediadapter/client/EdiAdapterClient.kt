@@ -46,9 +46,11 @@ interface EdiAdapterClient {
     ): Pair<Metadata?, ErrorMessage?>
 
     suspend fun markMessageAsRead(id: Uuid, herId: Int): Pair<Boolean?, ErrorMessage?>
+
+    fun close()
 }
 
-class DefaultEdiAdapterClient(
+class HttpEdiAdapterClient(
     clientProvider: () -> HttpClient,
     private val ediAdapterUrl: String = config().ediAdapterServer.url.toString()
 ) : EdiAdapterClient {
@@ -136,7 +138,7 @@ class DefaultEdiAdapterClient(
         }
     }
 
-    fun close() = httpClient.close()
+    override fun close() = httpClient.close()
 
     private suspend inline fun <reified T> handleResponse(httpResponse: HttpResponse): Pair<T?, ErrorMessage?> {
         return if (httpResponse.status == HttpStatusCode.OK || httpResponse.status == HttpStatusCode.Created) {
