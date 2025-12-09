@@ -3,7 +3,7 @@ tag-template: $NEXT_PATCH_VERSION
 change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
 
 include-paths:
-  - "edi-client/**"
+  - "edi-adapter-client/**"
 categories:
   - title: '🚀 Features'
     labels:
