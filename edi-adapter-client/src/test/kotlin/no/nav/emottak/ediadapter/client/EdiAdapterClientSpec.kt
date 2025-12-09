@@ -1,6 +1,5 @@
 package no.nav.emottak.ediadapter.client
 
-
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.equality.shouldBeEqualUsingFields
 import io.kotest.matchers.nulls.shouldBeNull
@@ -163,7 +162,7 @@ class EdiAdapterClientSpec : StringSpec(
     }
 )
 
-private fun ediAdapterClient(httpClient: () -> HttpClient) = EdiAdapterClient(
+private fun ediAdapterClient(httpClient: () -> HttpClient) = HttpEdiAdapterClient(
     ediAdapterUrl = "http://localhost",
     clientProvider = httpClient
 )
