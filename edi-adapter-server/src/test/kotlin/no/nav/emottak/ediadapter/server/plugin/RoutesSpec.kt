@@ -40,7 +40,6 @@ import io.ktor.server.routing.Route
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.TestApplicationBuilder
 import io.ktor.server.testing.testApplication
-import kotlinx.serialization.json.Json
 import no.nav.emottak.ediadapter.model.Metadata
 import no.nav.emottak.ediadapter.server.auth.AuthConfig.Companion.getTokenSupportConfig
 import no.nav.emottak.ediadapter.server.config
@@ -496,7 +495,9 @@ private fun TestApplicationBuilder.installExternalRoutes(
     ediClient: HttpClient,
     useAuthentication: Boolean = false
 ) {
-    install(ContentNegotiation) { json() }
+    install(ContentNegotiation) {
+        json()
+    }
 
     val issuer = config().azureAuth.issuer.value
 
@@ -522,19 +523,16 @@ private fun TestApplicationBuilder.installExternalRoutes(
 
 private fun fakeEdiClient(
     handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData
-): HttpClient = HttpClient(MockEngine) {
-    engine {
-        addHandler(handler)
+): HttpClient =
+    HttpClient(MockEngine) {
+        engine {
+            addHandler(handler)
+        }
+
+        install(ClientContentNegotiation) {
+            json()
+        }
     }
-    install(ClientContentNegotiation) {
-        json(
-            Json {
-                ignoreUnknownKeys = true
-                encodeDefaults = true
-            }
-        )
-    }
-}
 
 private suspend fun HttpClient.getWithAuth(
     url: String,
