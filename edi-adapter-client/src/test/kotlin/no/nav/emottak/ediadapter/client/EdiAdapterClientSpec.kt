@@ -1,5 +1,6 @@
 package no.nav.emottak.ediadapter.client
 
+
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.equality.shouldBeEqualUsingFields
 import io.kotest.matchers.nulls.shouldBeNull
@@ -24,7 +25,9 @@ import no.nav.emottak.ediadapter.model.ErrorMessage
 import no.nav.emottak.ediadapter.model.Message
 import no.nav.emottak.ediadapter.model.Metadata
 import no.nav.emottak.ediadapter.model.PostMessageRequest
-import no.nav.emottak.ediadapter.server.plugin.base64EncodedDocument
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.text.Charsets.UTF_8
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.uuid.Uuid
@@ -178,3 +181,11 @@ private fun fakeScopedAuthHttpClient(
         )
     }
 }
+
+@OptIn(ExperimentalEncodingApi::class)
+fun base64EncodedDocument(): String =
+    Base64.encode(
+        """"<MsgHead><Body>hello world</Body></MsgHead>""""
+            .trimIndent()
+            .toByteArray(UTF_8)
+    )
