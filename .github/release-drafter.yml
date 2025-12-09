@@ -1,6 +1,9 @@
 name-template: $NEXT_PATCH_VERSION
 tag-template: $NEXT_PATCH_VERSION
 change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
+
+include-paths:
+  - "edi-client/**"
 categories:
   - title: '🚀 Features'
     labels:
@@ -22,5 +25,5 @@ categories:
       - 'bump'
       - 'dependencies'
 template: |
-  ## What's Changed
+  ## Changes in edi-client
   $CHANGES
