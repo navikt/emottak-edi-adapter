@@ -24,6 +24,9 @@ categories:
     labels:
       - 'bump'
       - 'dependencies'
+  - title: "📝 Other"
+    labels:
+      - "*"
 template: |
   ## Changes in edi-client
   $CHANGES
