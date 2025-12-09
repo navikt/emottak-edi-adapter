@@ -163,7 +163,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             recover({
                 val messageId = messageId(call)
                 val herId = herId(call)
-                val response = ediClient.put("/messages/$messageId/read/$herId")
+                val response = ediClient.put("Messages/$messageId/read/$herId")
                 call.respondText(
                     text = response.bodyAsText(),
                     contentType = Json,

@@ -397,7 +397,7 @@ class RoutesSpec : StringSpec(
 
         "PUT /messages/{id}/read/{herId} marks message as read" {
             val ediClient = fakeEdiClient { request ->
-                request.url.fullPath shouldBe "/messages/5/read/111"
+                request.url.fullPath shouldBe "/Messages/5/read/111"
                 respond("", status = NoContent)
             }
 
