@@ -28,5 +28,5 @@ categories:
     labels:
       - "*"
 template: |
-  ## Changes in edi-client
+  ## Changes in edi-adapter-client
   $CHANGES
