@@ -214,7 +214,7 @@ class RoutesSpec : StringSpec(
 
             testApplication {
                 installExternalRoutes(ediClient)
-                client = createClient()
+                client = createJsonEnabledClient()
 
                 val message =
                     """
@@ -281,7 +281,7 @@ class RoutesSpec : StringSpec(
 
             testApplication {
                 installExternalRoutes(ediClient)
-                client = createClient()
+                client = createJsonEnabledClient()
 
                 val message =
                     """
@@ -319,7 +319,7 @@ class RoutesSpec : StringSpec(
 
             testApplication {
                 installExternalRoutes(ediClient)
-                client = createClient()
+                client = createJsonEnabledClient()
 
                 val apprecBody = """{ "appRecStatus":"1", "appRecErrorList":[] }"""
 
@@ -379,7 +379,7 @@ class RoutesSpec : StringSpec(
 
             testApplication {
                 installExternalRoutes(ediClient)
-                client = createClient()
+                client = createJsonEnabledClient()
 
                 val apprecBody = """{ "appRecStatus":"1", "appRecErrorList":[] }"""
 
@@ -483,7 +483,7 @@ class RoutesSpec : StringSpec(
     }
 )
 
-private fun ApplicationTestBuilder.createClient(): HttpClient = createClient {
+private fun ApplicationTestBuilder.createJsonEnabledClient(): HttpClient = createClient {
     install(ClientContentNegotiation) {
         json()
     }
