@@ -524,7 +524,7 @@ private fun fakeEdiClient(
 }
 
 @OptIn(ExperimentalEncodingApi::class)
-private fun base64EncodedDocument(): String =
+fun base64EncodedDocument(): String =
     Base64.encode(
         """"<MsgHead><Body>hello world</Body></MsgHead>""""
             .trimIndent()
