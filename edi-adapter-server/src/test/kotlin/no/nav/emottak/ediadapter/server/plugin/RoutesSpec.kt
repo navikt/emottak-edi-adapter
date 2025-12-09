@@ -6,6 +6,7 @@ import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
@@ -33,9 +34,11 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.authenticate
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.TestApplicationBuilder
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
+import no.nav.emottak.ediadapter.model.Metadata
 import no.nav.emottak.ediadapter.server.auth.AuthConfig
 import no.nav.emottak.ediadapter.server.config
 import no.nav.security.mock.oauth2.MockOAuth2Server
@@ -45,7 +48,6 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.text.Charsets.UTF_8
 import kotlin.uuid.Uuid
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
-import kotlinx.serialization.json.Json as JsonUtil
 
 private const val MESSAGE1 = "https://example.com/messages/1"
 
@@ -212,6 +214,7 @@ class RoutesSpec : StringSpec(
 
             testApplication {
                 installExternalRoutes(ediClient)
+                client = createClient()
 
                 val message =
                     """
@@ -244,10 +247,9 @@ class RoutesSpec : StringSpec(
                 }
 
                 response.status shouldBe Created
-                val jsonMap: Map<String, String> = JsonUtil.decodeFromString(response.bodyAsText())
-                jsonMap.size shouldBe 2
-                jsonMap["id"] shouldBe newUuid.toString()
-                jsonMap["location"] shouldBe newLocation
+                val metadata = response.body<Metadata>()
+                metadata.id shouldBe newUuid
+                metadata.location shouldBe newLocation
             }
         }
 
@@ -279,6 +281,7 @@ class RoutesSpec : StringSpec(
 
             testApplication {
                 installExternalRoutes(ediClient)
+                client = createClient()
 
                 val message =
                     """
@@ -295,10 +298,9 @@ class RoutesSpec : StringSpec(
                 }
 
                 response.status shouldBe Created
-                val jsonMap: Map<String, String> = JsonUtil.decodeFromString(response.bodyAsText())
-                jsonMap.size shouldBe 2
-                jsonMap["id"] shouldBe newUuid.toString()
-                jsonMap["location"] shouldBe newLocation
+                val metadata = response.body<Metadata>()
+                metadata.id shouldBe newUuid
+                metadata.location shouldBe newLocation
             }
         }
 
@@ -317,6 +319,7 @@ class RoutesSpec : StringSpec(
 
             testApplication {
                 installExternalRoutes(ediClient)
+                client = createClient()
 
                 val apprecBody = """{ "appRecStatus":"1", "appRecErrorList":[] }"""
 
@@ -326,10 +329,9 @@ class RoutesSpec : StringSpec(
                 }
 
                 response.status shouldBe Created
-                val jsonMap: Map<String, String> = JsonUtil.decodeFromString(response.bodyAsText())
-                jsonMap.size shouldBe 2
-                jsonMap["id"] shouldBe newUuid.toString()
-                jsonMap["location"] shouldBe newLocation
+                val metadata = response.body<Metadata>()
+                metadata.id shouldBe newUuid
+                metadata.location shouldBe newLocation
             }
         }
 
@@ -377,6 +379,7 @@ class RoutesSpec : StringSpec(
 
             testApplication {
                 installExternalRoutes(ediClient)
+                client = createClient()
 
                 val apprecBody = """{ "appRecStatus":"1", "appRecErrorList":[] }"""
 
@@ -386,10 +389,9 @@ class RoutesSpec : StringSpec(
                 }
 
                 response.status shouldBe Created
-                val jsonMap: Map<String, String> = JsonUtil.decodeFromString(response.bodyAsText())
-                jsonMap.size shouldBe 2
-                jsonMap["id"] shouldBe newUuid.toString()
-                jsonMap["location"] shouldBe newLocation
+                val metadata = response.body<Metadata>()
+                metadata.id shouldBe newUuid
+                metadata.location shouldBe newLocation
             }
         }
 
@@ -480,6 +482,12 @@ class RoutesSpec : StringSpec(
         }
     }
 )
+
+private fun ApplicationTestBuilder.createClient(): HttpClient = createClient {
+    install(ClientContentNegotiation) {
+        json()
+    }
+}
 
 private fun TestApplicationBuilder.installExternalRoutes(ediClient: HttpClient, useAuthentication: Boolean = false) {
     install(ContentNegotiation) { json() }
