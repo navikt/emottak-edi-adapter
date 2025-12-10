@@ -39,7 +39,7 @@ private fun httpClient(
         install(Auth) {
             bearer {
                 refreshTokens {
-                    val tokenInfo: TokenInfo = submitTokenForm(tokenClient, config().auth, scope).body()
+                    val tokenInfo: TokenInfo = submitTokenForm(tokenClient, config().azureAuth, scope).body()
                     BearerTokens(tokenInfo.accessToken, null)
                 }
                 sendWithoutRequest { true }
@@ -49,15 +49,15 @@ private fun httpClient(
 
 private suspend fun submitTokenForm(
     tokenClient: HttpClient,
-    auth: AzureAuth,
+    azureAuth: AzureAuth,
     scope: String
 ): HttpResponse =
     tokenClient.submitForm(
-        url = auth.azureTokenEndpoint.value,
+        url = azureAuth.azureTokenEndpoint.value,
         formParameters = parameters {
-            append("client_id", auth.azureAppClientId.value)
-            append("client_secret", auth.azureAppClientSecret.value)
-            append("grant_type", auth.azureGrantType.value)
+            append("client_id", azureAuth.azureAppClientId.value)
+            append("client_secret", azureAuth.azureAppClientSecret.value)
+            append("grant_type", azureAuth.azureGrantType.value)
             append("scope", scope)
         }
     )

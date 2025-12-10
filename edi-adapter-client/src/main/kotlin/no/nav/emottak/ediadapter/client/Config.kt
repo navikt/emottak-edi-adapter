@@ -4,7 +4,7 @@ import java.net.URL
 import java.time.Duration
 
 internal data class Config(
-    val auth: AzureAuth,
+    val azureAuth: AzureAuth,
     val httpClient: HttpClient,
     val httpTokenClient: HttpClient,
     val ediAdapterServer: EdiAdapterServer
