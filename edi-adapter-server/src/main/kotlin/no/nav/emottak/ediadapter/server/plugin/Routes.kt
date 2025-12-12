@@ -178,7 +178,7 @@ suspend fun HttpResponse.toMetadataResponse(): String {
     val body = bodyAsText()
     val location = headers[Location] ?: return body
 
-    val id = Uuid.parse(body)
+    val id = JsonUtil.decodeFromString<Uuid>(body)
 
     val metadata = Metadata(
         id = id,
