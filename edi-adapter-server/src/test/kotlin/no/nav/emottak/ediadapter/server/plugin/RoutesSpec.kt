@@ -49,6 +49,7 @@ import kotlin.io.encoding.Base64
 import kotlin.text.Charsets.UTF_8
 import kotlin.uuid.Uuid
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
+import kotlinx.serialization.json.Json as JsonUtil
 
 private const val MESSAGE1 = "https://example.com/messages/1"
 
@@ -207,7 +208,7 @@ class RoutesSpec : StringSpec(
                 request.url.fullPath shouldBe "/Messages"
                 (request.body as TextContent).text shouldContain base64EncodedDocument()
                 respond(
-                    content = newUuid.toString(),
+                    content = JsonUtil.encodeToString(newUuid.toString()),
                     headers = headersOf(Location, newLocation),
                     status = Created
                 )
@@ -274,7 +275,7 @@ class RoutesSpec : StringSpec(
             val ediClient = fakeEdiClient { request ->
                 request.url.fullPath shouldBe "/Messages"
                 respond(
-                    content = newUuid.toString(),
+                    content = JsonUtil.encodeToString(newUuid.toString()),
                     headers = headersOf(Location, newLocation),
                     status = Created
                 )
@@ -312,7 +313,7 @@ class RoutesSpec : StringSpec(
                 request.url.fullPath shouldBe "/Messages/77/apprec/8142"
                 (request.body as TextContent).text shouldContain "1"
                 respond(
-                    content = newUuid.toString(),
+                    content = JsonUtil.encodeToString(newUuid.toString()),
                     headers = headersOf(Location, newLocation),
                     status = Created
                 )
@@ -372,7 +373,7 @@ class RoutesSpec : StringSpec(
             val ediClient = fakeEdiClient { request ->
                 request.url.fullPath shouldBe "/Messages/1234/apprec/5678"
                 respond(
-                    content = newUuid.toString(),
+                    content = JsonUtil.encodeToString(newUuid.toString()),
                     headers = headersOf(Location, newLocation),
                     status = Created
                 )
