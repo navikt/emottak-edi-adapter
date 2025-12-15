@@ -271,7 +271,7 @@ class RoutesSpec : StringSpec(
             }
         }
 
-        "GET /messages with blank id returns 400" {
+        "GET /messages with blank receiver her id returns 400" {
             val ediClient = fakeEdiClient { error("Should not be called") }
 
             testApplication {
@@ -283,7 +283,7 @@ class RoutesSpec : StringSpec(
             }
         }
 
-        "GET /messages without id returns 400" {
+        "GET /messages without receiver her id returns 400" {
             val ediClient = fakeEdiClient { error("Should not be called") }
 
             testApplication {
@@ -299,7 +299,18 @@ class RoutesSpec : StringSpec(
         "GET /messages/{id} returns EDI response" {
             val ediClient = fakeEdiClient { request ->
                 request.url.fullPath shouldBe "/Messages/42"
-                respond("OK")
+                respond(
+                    """{
+                     "id": "42",
+                     "contentType": "application/xml",
+                     "receiverHerId": 1,
+                     "senderHerId": 2,
+                     "businessDocumentId": "100",
+                     "businessDocumentGenDate": "2008-11-26T19:31:17.281+00:00",
+                     "isAppRec": false,
+                     "sourceSystem": "eMottak EDI 2.0 edi-adapter, v1.0"
+                    }"""
+                )
             }
 
             testApplication {
@@ -308,11 +319,20 @@ class RoutesSpec : StringSpec(
                 val response = client.get("/api/v1/messages/42")
 
                 response.status shouldBe OK
-                response.bodyAsText() shouldBe "OK"
+                response.bodyAsText() shouldBe """{
+                     "id": "42",
+                     "contentType": "application/xml",
+                     "receiverHerId": 1,
+                     "senderHerId": 2,
+                     "businessDocumentId": "100",
+                     "businessDocumentGenDate": "2008-11-26T19:31:17.281+00:00",
+                     "isAppRec": false,
+                     "sourceSystem": "eMottak EDI 2.0 edi-adapter, v1.0"
+                    }"""
             }
         }
 
-        "GET /messages/{id} with blank id returns 400" {
+        "GET /messages/{id} with blank message id returns 400" {
             val ediClient = fakeEdiClient { error("Should not be called") }
 
             testApplication {
@@ -325,7 +345,7 @@ class RoutesSpec : StringSpec(
             }
         }
 
-        "GET /messages/{id} missing id returns 404" {
+        "GET /messages/{id} missing message id returns 404" {
             val ediClient = fakeEdiClient { error("Should not be called") }
 
             testApplication {
@@ -356,7 +376,16 @@ class RoutesSpec : StringSpec(
         "GET /messages/{id}/status returns EDI response" {
             val ediClient = fakeEdiClient { request ->
                 request.url.fullPath shouldBe "/Messages/55/status"
-                respond("""{"status":"READ"}""")
+                respond(
+                    """[
+                         {
+                           "receiverHerId": 1,
+                           "transportDeliveryState": "Acknowledged",
+                           "sent": true,
+                           "appRecStatus": null
+                         }
+                       ]"""
+                )
             }
 
             testApplication {
@@ -365,14 +394,29 @@ class RoutesSpec : StringSpec(
                 val response = client.get("/api/v1/messages/55/status")
 
                 response.status shouldBe OK
-                response.bodyAsText() shouldBe """{"status":"READ"}"""
+                response.bodyAsText() shouldBe
+                    """[
+                         {
+                           "receiverHerId": 1,
+                           "transportDeliveryState": "Acknowledged",
+                           "sent": true,
+                           "appRecStatus": null
+                         }
+                       ]"""
             }
         }
 
         "GET /messages/{id}/apprec returns EDI response" {
             val ediClient = fakeEdiClient { request ->
                 request.url.fullPath shouldBe "/Messages/10/apprec"
-                respond("""{"apprec":"OK"}""")
+                respond(
+                    """[
+                        { "receiverHerId": 1,
+                          "appRecStatus": Ok,
+                          "appRecErrorList": null
+                        }
+                      ]"""
+                )
             }
 
             testApplication {
@@ -381,11 +425,17 @@ class RoutesSpec : StringSpec(
                 val response = client.get("/api/v1/messages/10/apprec")
 
                 response.status shouldBe OK
-                response.bodyAsText() shouldBe """{"apprec":"OK"}"""
+                response.bodyAsText() shouldBe
+                    """[
+                        { "receiverHerId": 1,
+                          "appRecStatus": Ok,
+                          "appRecErrorList": null
+                        }
+                      ]"""
             }
         }
 
-        "POST /messages forwards body to EDI" {
+        "POST /messages returns metadata (id and location) from EDI response" {
             val newLocation = MESSAGE1
             val newUuid = Uuid.random()
             val ediClient = fakeEdiClient { request ->
@@ -453,44 +503,7 @@ class RoutesSpec : StringSpec(
             }
         }
 
-        "POST /messages fetches Location header when EDI responds with Created" {
-            val newLocation = MESSAGE1
-            val newUuid = Uuid.random()
-            val ediClient = fakeEdiClient { request ->
-                request.url.fullPath shouldBe "/Messages"
-                respond(
-                    content = JsonUtil.encodeToString(newUuid.toString()),
-                    headers = headersOf(Location, newLocation),
-                    status = Created
-                )
-            }
-
-            testApplication {
-                installExternalRoutes(ediClient)
-                client = createJsonEnabledClient()
-
-                val message =
-                    """
-                {
-                  "businessDocument": ${base64EncodedDocument()},
-                  "contentType": "application/xml",
-                  "contentTransferEncoding": "base64"
-                }
-                """
-
-                val response = client.post("/api/v1/messages") {
-                    contentType(Json)
-                    setBody(message)
-                }
-
-                response.status shouldBe Created
-                val metadata = response.body<Metadata>()
-                metadata.id shouldBe newUuid
-                metadata.location shouldBe newLocation
-            }
-        }
-
-        "POST /messages/{id}/apprec/{sender} forwards body" {
+        "POST /messages/{id}/apprec/{sender} returns metadata (id and location) from EDI response" {
             val newLocation = MESSAGE1
             val newUuid = Uuid.random()
             val ediClient = fakeEdiClient { request ->
@@ -548,36 +561,6 @@ class RoutesSpec : StringSpec(
                     setBody("""{"status":"1"}""")
                 }
                 response.status shouldBe NotFound
-            }
-        }
-
-        "POST /messages/{messageId}/apprec/{apprecSenderHerId} fetches Location header when EDI responds with Created" {
-            val newLocation = MESSAGE1
-            val newUuid = Uuid.random()
-            val ediClient = fakeEdiClient { request ->
-                request.url.fullPath shouldBe "/Messages/1234/apprec/5678"
-                respond(
-                    content = JsonUtil.encodeToString(newUuid.toString()),
-                    headers = headersOf(Location, newLocation),
-                    status = Created
-                )
-            }
-
-            testApplication {
-                installExternalRoutes(ediClient)
-                client = createJsonEnabledClient()
-
-                val apprecBody = """{ "appRecStatus":"1", "appRecErrorList":[] }"""
-
-                val response = client.post("/api/v1/messages/1234/apprec/5678") {
-                    contentType(Json)
-                    setBody(apprecBody)
-                }
-
-                response.status shouldBe Created
-                val metadata = response.body<Metadata>()
-                metadata.id shouldBe newUuid
-                metadata.location shouldBe newLocation
             }
         }
 
