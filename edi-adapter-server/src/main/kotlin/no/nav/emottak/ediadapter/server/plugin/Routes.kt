@@ -1,5 +1,6 @@
 package no.nav.emottak.ediadapter.server.plugin
 
+import arrow.core.raise.Raise
 import arrow.core.raise.recover
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -10,9 +11,11 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.HttpHeaders.Location
+import io.ktor.http.Parameters
+import io.ktor.http.ParametersBuilder
 import io.ktor.http.contentType
-import io.ktor.http.parametersOf
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -28,9 +31,15 @@ import no.nav.emottak.ediadapter.model.Metadata
 import no.nav.emottak.ediadapter.model.PostAppRecRequest
 import no.nav.emottak.ediadapter.model.PostMessageRequest
 import no.nav.emottak.ediadapter.server.MessageError
+import no.nav.emottak.ediadapter.server.ValidationError
+import no.nav.emottak.ediadapter.server.apprecSenderHerId
+import no.nav.emottak.ediadapter.server.businessDocumentId
 import no.nav.emottak.ediadapter.server.config
 import no.nav.emottak.ediadapter.server.herId
+import no.nav.emottak.ediadapter.server.includeMetadata
 import no.nav.emottak.ediadapter.server.messageId
+import no.nav.emottak.ediadapter.server.messagesToFetch
+import no.nav.emottak.ediadapter.server.orderBy
 import no.nav.emottak.ediadapter.server.receiverHerIds
 import no.nav.emottak.ediadapter.server.senderHerId
 import no.nav.emottak.ediadapter.server.toContent
@@ -38,6 +47,11 @@ import kotlin.uuid.Uuid
 import kotlinx.serialization.json.Json as JsonUtil
 
 private const val RECEIVER_HER_IDS = "ReceiverHerIds"
+private const val SENDER_HER_ID = "SenderHerId"
+private const val BUSINESS_DOCUMENT_ID = "BusinessDocumentId"
+private const val INCLUDE_METADATA = "IncludeMetadata"
+private const val MESSAGES_TO_FETCH = "MessagesToFetch"
+private const val ORDER_BY = "OrderBy"
 
 fun Application.configureRoutes(
     ediClient: HttpClient,
@@ -70,8 +84,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
     route("/api/v1") {
         get("/messages") {
             recover({
-                val receiverHerIds = receiverHerIds(call)
-                val params = parametersOf(RECEIVER_HER_IDS to receiverHerIds)
+                val params = messageQueryParams(call)
                 val response = ediClient.get("Messages") { url { parameters.appendAll(params) } }
                 call.respondText(
                     text = response.bodyAsText(),
@@ -134,7 +147,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                     setBody(message)
                 }
                 call.respondText(
-                    text = response.toMetadataResponse(),
+                    text = response.toMetadata(),
                     contentType = Json,
                     status = response.status
                 )
@@ -144,7 +157,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
         post("/messages/{messageId}/apprec/{apprecSenderHerId}") {
             recover({
                 val messageId = messageId(call)
-                val senderHerId = senderHerId(call)
+                val senderHerId = apprecSenderHerId(call)
                 val appRec = call.receive<PostAppRecRequest>()
 
                 val response = ediClient.post("Messages/$messageId/apprec/$senderHerId") {
@@ -152,7 +165,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                     setBody(appRec)
                 }
                 call.respondText(
-                    text = response.toMetadataResponse(),
+                    text = response.toMetadata(),
                     contentType = Json,
                     status = response.status
                 )
@@ -174,7 +187,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
     }
 }
 
-suspend fun HttpResponse.toMetadataResponse(): String {
+private suspend fun HttpResponse.toMetadata(): String {
     val body = bodyAsText()
     val location = headers[Location] ?: return body
 
@@ -187,3 +200,26 @@ suspend fun HttpResponse.toMetadataResponse(): String {
 
     return JsonUtil.encodeToString(metadata)
 }
+
+private fun Raise<ValidationError>.messageQueryParams(
+    call: ApplicationCall
+): Parameters {
+    val receiverHerIds = receiverHerIds(call)
+    val senderHerId = senderHerId(call)
+    val businessDocumentId = businessDocumentId(call)
+    val includeMetadata = includeMetadata(call)
+    val messagesToFetch = messagesToFetch(call)
+    val orderBy = orderBy(call)
+
+    return Parameters.build {
+        appendAll(RECEIVER_HER_IDS, receiverHerIds)
+        appendIfPresent(SENDER_HER_ID, senderHerId)
+        appendIfPresent(BUSINESS_DOCUMENT_ID, businessDocumentId)
+        appendIfPresent(INCLUDE_METADATA, includeMetadata)
+        appendIfPresent(MESSAGES_TO_FETCH, messagesToFetch)
+        appendIfPresent(ORDER_BY, orderBy)
+    }
+}
+
+private fun ParametersBuilder.appendIfPresent(name: String, value: Any?) =
+    value?.let { append(name, it.toString()) }

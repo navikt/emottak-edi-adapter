@@ -71,19 +71,203 @@ class RoutesSpec : StringSpec(
             mockOAuth2Server = MockOAuth2Server().also { it.start(port = 3344) }
         }
 
-        "GET /messages returns EDI response" {
+        "GET /messages with single receiver her id returns EDI response" {
             val ediClient = fakeEdiClient {
                 it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1"
-                respond("""[{"id":"1"}]""")
+                respond("""[{"id":"100", "receiverHerId": "1"}]""")
             }
 
             testApplication {
                 installExternalRoutes(ediClient)
 
-                val response = client.get("/api/v1/messages?ReceiverHerIds=1")
+                val response = client.get("/api/v1/messages?receiverHerIds=1")
 
                 response.status shouldBe OK
-                response.bodyAsText() shouldBe """[{"id":"1"}]"""
+                response.bodyAsText() shouldBe """[{"id":"100", "receiverHerId": "1"}]"""
+            }
+        }
+
+        "GET /messages with multiple receiver her ids returns EDI response" {
+            val ediClient = fakeEdiClient {
+                it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1&ReceiverHerIds=2"
+                respond("""[{"id":"100", "receiverHerId": "1"}, {"id":"200", "receiverHerId": "2"}]""")
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+
+                val response = client.get("/api/v1/messages?receiverHerIds=1&receiverHerIds=2")
+
+                response.status shouldBe OK
+                response.bodyAsText() shouldBe """[{"id":"100", "receiverHerId": "1"}, {"id":"200", "receiverHerId": "2"}]"""
+            }
+        }
+
+        "GET /messages with receiver her id and sender her id returns EDI response" {
+            val ediClient = fakeEdiClient {
+                it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1&SenderHerId=2"
+                respond("""[{"id":"100", "receiverHerId": "1"}]""")
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+
+                val response = client.get("/api/v1/messages?receiverHerIds=1&senderHerId=2")
+
+                response.status shouldBe OK
+                response.bodyAsText() shouldBe """[{"id":"100", "receiverHerId": "1"}]"""
+            }
+        }
+
+        "GET /messages with receiver her id and business document id returns EDI response" {
+            val ediClient = fakeEdiClient {
+                it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1&BusinessDocumentId=10"
+                respond("""[{"id":"100", "receiverHerId": "1"}]""")
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+
+                val response = client.get("/api/v1/messages?receiverHerIds=1&businessDocumentId=10")
+
+                response.status shouldBe OK
+                response.bodyAsText() shouldBe """[{"id":"100", "receiverHerId": "1"}]"""
+            }
+        }
+
+        "GET /messages with receiver her id and messages to fetch returns EDI response" {
+            val ediClient = fakeEdiClient {
+                it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1&MessagesToFetch=1"
+                respond("""[{"id":"100", "receiverHerId": "1"}]""")
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+
+                val response = client.get("/api/v1/messages?receiverHerIds=1&messagesToFetch=1")
+
+                response.status shouldBe OK
+                response.bodyAsText() shouldBe """[{"id":"100", "receiverHerId": "1"}]"""
+            }
+        }
+
+        "GET /messages with receiver her id and messages to fetch (0) returns error" {
+            val ediClient = fakeEdiClient { error("Should not be called") }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+
+                val response = client.get("/api/v1/messages?receiverHerIds=1&messagesToFetch=0")
+
+                response.status shouldBe BadRequest
+                response.bodyAsText() shouldBe "Messages to fetch must be a number between 1 and 100"
+            }
+        }
+
+        "GET /messages with receiver her id and messages to fetch (101) returns error" {
+            val ediClient = fakeEdiClient { error("Should not be called") }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+
+                val response = client.get("/api/v1/messages?receiverHerIds=1&messagesToFetch=101")
+
+                response.status shouldBe BadRequest
+                response.bodyAsText() shouldBe "Messages to fetch must be a number between 1 and 100"
+            }
+        }
+
+        "GET /messages with receiver her id and order by ASC returns EDI response" {
+            val ediClient = fakeEdiClient {
+                it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1&OrderBy=1"
+                respond("""[{"id":"100", "receiverHerId": "1"}, {"id":"101", "receiverHerId": "1"}]""")
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+
+                val response = client.get("/api/v1/messages?receiverHerIds=1&orderBy=1")
+
+                response.status shouldBe OK
+                response.bodyAsText() shouldBe """[{"id":"100", "receiverHerId": "1"}, {"id":"101", "receiverHerId": "1"}]"""
+            }
+        }
+
+        "GET /messages with receiver her id and order by DESC returns EDI response" {
+            val ediClient = fakeEdiClient {
+                it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1&OrderBy=2"
+                respond("""[{"id":"101", "receiverHerId": "1"}, {"id":"100", "receiverHerId": "1"}]""")
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+
+                val response = client.get("/api/v1/messages?receiverHerIds=1&orderBy=2")
+
+                response.status shouldBe OK
+                response.bodyAsText() shouldBe """[{"id":"101", "receiverHerId": "1"}, {"id":"100", "receiverHerId": "1"}]"""
+            }
+        }
+
+        "GET /messages with receiver her id and order by non valid sorting returns error" {
+            val ediClient = fakeEdiClient { error("Should not be called") }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+
+                val response = client.get("/api/v1/messages?receiverHerIds=1&orderBy=3")
+
+                response.status shouldBe BadRequest
+                response.bodyAsText() shouldBe "Order by must be 1 (Ascending) or 2 (Descending)"
+            }
+        }
+
+        "GET /messages with receiver her id and include metadata returns EDI response" {
+            val ediClient = fakeEdiClient {
+                it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1&IncludeMetadata=true"
+                respond(
+                    """{
+                    "id": "100",
+                    "contentType": "application/xml",
+                    "receiverHerId": 1,
+                    "senderHerId": 2,
+                    "businessDocumentId": "10",
+                    "businessDocumentGenDate": "2008-11-26T19:31:17.281+00:00",
+                    "isAppRec": false,
+                    "sourceSystem": "eMottak EDI 2.0 edi-adapter, v1.0"
+                }"""
+                )
+            }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+
+                val response = client.get("/api/v1/messages?receiverHerIds=1&includeMetadata=true")
+
+                response.status shouldBe OK
+                response.bodyAsText() shouldBe """{
+                    "id": "100",
+                    "contentType": "application/xml",
+                    "receiverHerId": 1,
+                    "senderHerId": 2,
+                    "businessDocumentId": "10",
+                    "businessDocumentGenDate": "2008-11-26T19:31:17.281+00:00",
+                    "isAppRec": false,
+                    "sourceSystem": "eMottak EDI 2.0 edi-adapter, v1.0"
+                }"""
+            }
+        }
+
+        "GET /messages with receiver her id and non valid include metadata returns error" {
+            val ediClient = fakeEdiClient { error("Should not be called") }
+
+            testApplication {
+                installExternalRoutes(ediClient)
+
+                val response = client.get("/api/v1/messages?receiverHerIds=1&includeMetadata=foobar")
+
+                response.status shouldBe BadRequest
+                response.bodyAsText() shouldBe "Include metadata must be 'true' or 'false'"
             }
         }
 
@@ -93,7 +277,7 @@ class RoutesSpec : StringSpec(
             testApplication {
                 installExternalRoutes(ediClient)
 
-                val response = client.get("/api/v1/messages?ReceiverHerIds=")
+                val response = client.get("/api/v1/messages?receiverHerIds=")
                 response.status shouldBe BadRequest
                 response.bodyAsText() shouldContain "Receiver her ids"
             }

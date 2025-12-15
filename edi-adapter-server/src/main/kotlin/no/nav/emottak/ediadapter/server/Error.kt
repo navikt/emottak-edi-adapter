@@ -16,6 +16,10 @@ data object ReceiverHerIdsEmpty : ValidationError
 data object HerIdEmpty : ValidationError
 data object SenderHerIdMissing : ValidationError
 data object SenderHerIdEmpty : ValidationError
+data object BusinessDocumentIdEmpty : ValidationError
+data object IncludeMetadataInvalidFormat : ValidationError
+data object MessagesToFetchInvalidFormat : ValidationError
+data object OrderByInvalidFormat : ValidationError
 
 fun MessageError.toContent(): TextContent =
     when (this) {
@@ -42,6 +46,18 @@ fun MessageError.toContent(): TextContent =
 
         is SenderHerIdEmpty ->
             TextContent("Sender her id is empty")
+
+        is BusinessDocumentIdEmpty ->
+            TextContent("Business document id is empty")
+
+        is IncludeMetadataInvalidFormat ->
+            TextContent("Include metadata must be 'true' or 'false'")
+
+        is MessagesToFetchInvalidFormat ->
+            TextContent("Messages to fetch must be a number between 1 and 100")
+
+        is OrderByInvalidFormat ->
+            TextContent("Order by must be 1 (Ascending) or 2 (Descending)")
     }
 
 private fun TextContent(
