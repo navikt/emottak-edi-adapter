@@ -607,24 +607,21 @@ class RoutesSpec : StringSpec(
         "GET /messages returns EDI response with authentication" {
             val ediClient = fakeEdiClient {
                 it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1"
-                respond("""[{"id":"1"}]""")
+                respond("""[{"id":"100", "receiverHerId": "1"}]""")
             }
 
             testApplication {
                 installExternalRoutes(ediClient, useAuthentication = true)
 
-                val response = client.getWithAuth("/api/v1/messages?ReceiverHerIds=1", getToken)
+                val response = client.getWithAuth("/api/v1/messages?receiverHerIds=1", getToken)
 
                 response.status shouldBe OK
-                response.bodyAsText() shouldBe """[{"id":"1"}]"""
+                response.bodyAsText() shouldBe """[{"id":"100", "receiverHerId": "1"}]"""
             }
         }
 
         "GET /messages returns Unauthorised if access token is missing" {
-            val ediClient = fakeEdiClient {
-                it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1"
-                respond("""[{"id":"1"}]""")
-            }
+            val ediClient = fakeEdiClient { error("Should not be called") }
 
             testApplication {
                 installExternalRoutes(ediClient, useAuthentication = true)
@@ -636,10 +633,7 @@ class RoutesSpec : StringSpec(
         }
 
         "GET /messages returns Unauthorised if access token is invalid" {
-            val ediClient = fakeEdiClient {
-                it.url.fullPath shouldBe "/Messages?ReceiverHerIds=1"
-                respond("""[{"id":"1"}]""")
-            }
+            val ediClient = fakeEdiClient { error("Should not be called") }
 
             testApplication {
                 installExternalRoutes(ediClient, useAuthentication = true)
