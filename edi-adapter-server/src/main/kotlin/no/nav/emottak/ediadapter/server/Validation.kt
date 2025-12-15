@@ -16,19 +16,13 @@ private const val MESSAGES_TO_FETCH = "messagesToFetch"
 private const val ORDER_BY = "orderBy"
 
 fun Raise<ValidationError>.messageId(call: ApplicationCall): String =
-    call.parameters[MESSAGE_ID]!!.also {
-        ensure(it.isNotBlank()) { MessageIdEmpty }
-    }
+    requiredPathParam(call, MESSAGE_ID, MessageIdEmpty)
 
 fun Raise<ValidationError>.herId(call: ApplicationCall): String =
-    call.parameters[HER_ID]!!.also {
-        ensure(it.isNotBlank()) { HerIdEmpty }
-    }
+    requiredPathParam(call, HER_ID, HerIdEmpty)
 
 fun Raise<ValidationError>.apprecSenderHerId(call: ApplicationCall): String =
-    call.parameters[APP_REC_SENDER_HER_ID]!!.also {
-        ensure(it.isNotBlank()) { SenderHerIdEmpty }
-    }
+    requiredPathParam(call, APP_REC_SENDER_HER_ID, SenderHerIdEmpty)
 
 fun Raise<ValidationError>.receiverHerIds(call: ApplicationCall): List<String> =
     ensureNotNull(call.request.queryParameters.getAll(RECEIVER_HER_IDS)) { ReceiverHerIdsMissing }
@@ -37,14 +31,10 @@ fun Raise<ValidationError>.receiverHerIds(call: ApplicationCall): List<String> =
         .also { ensure(it.isNotEmpty()) { ReceiverHerIdsEmpty } }
 
 fun Raise<ValidationError>.senderHerId(call: ApplicationCall): String? =
-    call.request.queryParameters[SENDER_HER_ID]
-        ?.trim()
-        ?.also { ensure(it.isNotEmpty()) { SenderHerIdEmpty } }
+    optionalNonBlankQueryParam(call, SENDER_HER_ID, SenderHerIdEmpty)
 
 fun Raise<ValidationError>.businessDocumentId(call: ApplicationCall): String? =
-    call.request.queryParameters[BUSINESS_DOCUMENT_ID]
-        ?.trim()
-        ?.also { ensure(it.isNotEmpty()) { BusinessDocumentIdEmpty } }
+    optionalNonBlankQueryParam(call, BUSINESS_DOCUMENT_ID, BusinessDocumentIdEmpty)
 
 fun Raise<ValidationError>.includeMetadata(call: ApplicationCall): Boolean? =
     call.request.queryParameters[INCLUDE_METADATA]
@@ -65,3 +55,20 @@ fun Raise<ValidationError>.orderBy(call: ApplicationCall): Int? =
         ?.also { ensure(it.isNotEmpty()) { OrderByInvalidFormat } }
         ?.toIntOrNull()
         ?.also { ensure(it == 1 || it == 2) { OrderByInvalidFormat } }
+
+private fun Raise<ValidationError>.requiredPathParam(
+    call: ApplicationCall,
+    name: String,
+    emptyError: ValidationError
+): String =
+    ensureNotNull(call.parameters[name]) { emptyError }
+        .also { ensure(it.isNotBlank()) { emptyError } }
+
+private fun Raise<ValidationError>.optionalNonBlankQueryParam(
+    call: ApplicationCall,
+    name: String,
+    emptyError: ValidationError
+): String? =
+    call.request.queryParameters[name]
+        ?.trim()
+        ?.also { ensure(it.isNotEmpty()) { emptyError } }
