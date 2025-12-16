@@ -2,6 +2,7 @@ package no.nav.emottak.ediadapter.server.plugin
 
 import arrow.core.raise.Raise
 import arrow.core.raise.recover
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -11,6 +12,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.HttpHeaders.Location
+import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.Parameters
 import io.ktor.http.ParametersBuilder
 import io.ktor.http.contentType
@@ -45,6 +47,8 @@ import no.nav.emottak.ediadapter.server.senderHerId
 import no.nav.emottak.ediadapter.server.toContent
 import kotlin.uuid.Uuid
 import kotlinx.serialization.json.Json as JsonUtil
+
+private val log = KotlinLogging.logger { }
 
 private const val RECEIVER_HER_IDS = "ReceiverHerIds"
 private const val SENDER_HER_ID = "SenderHerId"
@@ -83,106 +87,134 @@ fun Route.internalRoutes(registry: PrometheusMeterRegistry) {
 fun Route.externalRoutes(ediClient: HttpClient) {
     route("/api/v1") {
         get("/messages") {
-            recover({
-                val params = messageQueryParams(call)
-                val response = ediClient.get("Messages") { url { parameters.appendAll(params) } }
-                call.respondText(
-                    text = response.bodyAsText(),
-                    contentType = Json,
-                    status = response.status
-                )
-            }) { e: MessageError -> call.respond(e.toContent()) }
+            recover(
+                {
+                    val params = messageQueryParams(call)
+                    val response = ediClient.get("Messages") { url { parameters.appendAll(params) } }
+                    call.respondText(
+                        text = response.bodyAsText(),
+                        contentType = Json,
+                        status = response.status
+                    )
+                },
+                { e: MessageError -> call.respond(e.toContent()) }
+            ) { t: Throwable -> call.respondInternalError(t) }
         }
+
         get("/messages/{messageId}") {
-            recover({
-                val messageId = messageId(call)
-                val response = ediClient.get("Messages/$messageId")
-                call.respondText(
-                    text = response.bodyAsText(),
-                    contentType = Json,
-                    status = response.status
-                )
-            }) { e: MessageError -> call.respond(e.toContent()) }
+            recover(
+                {
+                    val messageId = messageId(call)
+                    val response = ediClient.get("Messages/$messageId")
+                    call.respondText(
+                        text = response.bodyAsText(),
+                        contentType = Json,
+                        status = response.status
+                    )
+                },
+                { e: MessageError -> call.respond(e.toContent()) },
+            ) { t: Throwable -> call.respondInternalError(t) }
         }
 
         get("/messages/{messageId}/document") {
-            recover({
-                val messageId = messageId(call)
-                val response = ediClient.get("Messages/$messageId/business-document")
-                call.respondText(
-                    text = response.bodyAsText(),
-                    contentType = Json,
-                    status = response.status
-                )
-            }) { e: MessageError -> call.respond(e.toContent()) }
+            recover(
+                {
+                    val messageId = messageId(call)
+                    val response = ediClient.get("Messages/$messageId/business-document")
+                    call.respondText(
+                        text = response.bodyAsText(),
+                        contentType = Json,
+                        status = response.status
+                    )
+                },
+                { e: MessageError -> call.respond(e.toContent()) },
+            ) { t: Throwable -> call.respondInternalError(t) }
         }
 
         get("/messages/{messageId}/status") {
-            recover({
-                val messageId = messageId(call)
-                val response = ediClient.get("Messages/$messageId/status")
-                call.respondText(
-                    text = response.bodyAsText(),
-                    contentType = Json,
-                    status = response.status
-                )
-            }) { e: MessageError -> call.respond(e.toContent()) }
+            recover(
+                {
+                    val messageId = messageId(call)
+                    val response = ediClient.get("Messages/$messageId/status")
+                    call.respondText(
+                        text = response.bodyAsText(),
+                        contentType = Json,
+                        status = response.status
+                    )
+                },
+                { e: MessageError -> call.respond(e.toContent()) },
+            ) { t: Throwable -> call.respondInternalError(t) }
         }
+
         get("/messages/{messageId}/apprec") {
-            recover({
-                val messageId = messageId(call)
-                val response = ediClient.get("Messages/$messageId/apprec")
-                call.respondText(
-                    text = response.bodyAsText(),
-                    contentType = Json,
-                    status = response.status
-                )
-            }) { e: MessageError -> call.respond(e.toContent()) }
+            recover(
+                {
+                    val messageId = messageId(call)
+                    val response = ediClient.get("Messages/$messageId/apprec")
+                    call.respondText(
+                        text = response.bodyAsText(),
+                        contentType = Json,
+                        status = response.status
+                    )
+                },
+                { e: MessageError -> call.respond(e.toContent()) }
+            ) { t: Throwable -> call.respondInternalError(t) }
         }
+
         post("/messages") {
-            recover({
-                val message = call.receive<PostMessageRequest>()
-                val response = ediClient.post("Messages") {
-                    contentType(Json)
-                    setBody(message)
-                }
-                call.respondText(
-                    text = response.toMetadata(),
-                    contentType = Json,
-                    status = response.status
-                )
-            }) { e: MessageError -> call.respond(e.toContent()) }
+            val message = call.receive<PostMessageRequest>()
+            recover(
+                {
+
+                    val response = ediClient.post("Messages") {
+                        contentType(Json)
+                        setBody(message)
+                    }
+                    call.respondText(
+                        text = response.toMetadata(),
+                        contentType = Json,
+                        status = response.status
+                    )
+                },
+                { e: MessageError -> call.respond(e.toContent()) }
+            ) { t: Throwable -> call.respondInternalError(t) }
         }
 
         post("/messages/{messageId}/apprec/{apprecSenderHerId}") {
-            recover({
-                val messageId = messageId(call)
-                val senderHerId = apprecSenderHerId(call)
-                val appRec = call.receive<PostAppRecRequest>()
+            val appRec = call.receive<PostAppRecRequest>()
+            recover(
+                {
+                    val messageId = messageId(call)
+                    val senderHerId = apprecSenderHerId(call)
 
-                val response = ediClient.post("Messages/$messageId/apprec/$senderHerId") {
-                    contentType(Json)
-                    setBody(appRec)
-                }
-                call.respondText(
-                    text = response.toMetadata(),
-                    contentType = Json,
-                    status = response.status
-                )
-            }) { e: MessageError -> call.respond(e.toContent()) }
+                    val response = ediClient.post("Messages/$messageId/apprec/$senderHerId") {
+                        contentType(Json)
+                        setBody(appRec)
+                    }
+                    call.respondText(
+                        text = response.toMetadata(),
+                        contentType = Json,
+                        status = response.status
+                    )
+                },
+                { e: MessageError -> call.respond(e.toContent()) }
+            ) { t: Throwable -> call.respondInternalError(t) }
         }
 
         put("/messages/{messageId}/read/{herId}") {
-            recover({
-                val messageId = messageId(call)
-                val herId = herId(call)
-                val response = ediClient.put("Messages/$messageId/read/$herId")
-                call.respondText(
-                    text = response.bodyAsText(),
-                    contentType = Json,
-                    status = response.status
-                )
-            }) { e: MessageError -> call.respond(e.toContent()) }
+            recover(
+                {
+                    val messageId = messageId(call)
+                    val herId = herId(call)
+                    val response = ediClient.put("Messages/$messageId/read/$herId")
+                    call.respondText(
+                        text = response.bodyAsText(),
+                        contentType = Json,
+                        status = response.status
+                    )
+                },
+                { e: MessageError -> call.respond(e.toContent()) }
+            ) { t: Throwable -> call.respondInternalError(t) }
         }
     }
 }
@@ -223,3 +255,8 @@ private fun Raise<ValidationError>.messageQueryParams(
 
 private fun ParametersBuilder.appendIfPresent(name: String, value: Any?) =
     value?.let { append(name, it.toString()) }
+
+private suspend fun ApplicationCall.respondInternalError(t: Throwable) {
+    log.error(t) { "Unexpected error while processing request" }
+    respond(InternalServerError)
+}

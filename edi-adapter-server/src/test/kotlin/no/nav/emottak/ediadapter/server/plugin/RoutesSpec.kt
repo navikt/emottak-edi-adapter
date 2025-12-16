@@ -2,7 +2,6 @@ package no.nav.emottak.ediadapter.server.plugin
 
 import com.nimbusds.jwt.SignedJWT
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.ktor.client.HttpClient
@@ -24,10 +23,12 @@ import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.http.HttpHeaders.Location
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.Created
+import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.NoContent
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.http.HttpStatusCode.Companion.Unauthorized
+import io.ktor.http.HttpStatusCode.Companion.UnsupportedMediaType
 import io.ktor.http.content.TextContent
 import io.ktor.http.contentType
 import io.ktor.http.fullPath
@@ -489,17 +490,60 @@ class RoutesSpec : StringSpec(
             }
         }
 
-        "POST /messages with empty body returns 400 or 415" {
-            val ediClient = fakeEdiClient { error("Should not be called") }
+        "POST /messages with empty body returns 415" {
+            testApplication {
+                installExternalRoutes(fakeEdiClient { error("Should not be called") })
+
+                val response = client.post("/api/v1/messages") {
+                    contentType(Json)
+                    setBody("")
+                }
+
+                response.status shouldBe UnsupportedMediaType
+            }
+        }
+
+        "POST /messages without body returns 415" {
+            testApplication {
+                installExternalRoutes(fakeEdiClient { error("Should not be called") })
+
+                val response = client.post("/api/v1/messages")
+
+                response.status shouldBe UnsupportedMediaType
+            }
+        }
+
+        "POST /messages with invalid body (json) returns 400" {
+            testApplication {
+                installExternalRoutes(fakeEdiClient { error("Should not be called") })
+
+                val response = client.post("/api/v1/messages") {
+                    contentType(Json)
+                    setBody("{ not-valid-json }")
+                }
+
+                response.status shouldBe BadRequest
+            }
+        }
+
+        "POST /messages returns 500 on unexpected exception" {
+            val ediClient = fakeEdiClient { throw RuntimeException("boom") }
 
             testApplication {
                 installExternalRoutes(ediClient)
 
                 val response = client.post("/api/v1/messages") {
                     contentType(Json)
-                    setBody("")
+                    setBody(
+                        """{
+                            "businessDocument":  ${base64EncodedDocument()},
+                            "contentType": "application/xml",
+                            "contentTransferEncoding": "base64"
+                        }"""
+                    )
                 }
-                response.status.value shouldBeIn listOf(400, 415)
+
+                response.status shouldBe InternalServerError
             }
         }
 
