@@ -112,7 +112,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                         status = response.status
                     )
                 },
-                { e: MessageError -> call.respond(e.toContent()) },
+                { e: MessageError -> call.respond(e.toContent()) }
             ) { t: Throwable -> call.respondInternalError(t) }
         }
 
@@ -127,7 +127,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                         status = response.status
                     )
                 },
-                { e: MessageError -> call.respond(e.toContent()) },
+                { e: MessageError -> call.respond(e.toContent()) }
             ) { t: Throwable -> call.respondInternalError(t) }
         }
 
@@ -142,7 +142,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
                         status = response.status
                     )
                 },
-                { e: MessageError -> call.respond(e.toContent()) },
+                { e: MessageError -> call.respond(e.toContent()) }
             ) { t: Throwable -> call.respondInternalError(t) }
         }
 
@@ -165,7 +165,6 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             val message = call.receive<PostMessageRequest>()
             recover(
                 {
-
                     val response = ediClient.post("Messages") {
                         contentType(Json)
                         setBody(message)
