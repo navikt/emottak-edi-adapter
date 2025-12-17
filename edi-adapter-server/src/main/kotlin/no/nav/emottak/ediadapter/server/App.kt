@@ -15,6 +15,7 @@ import no.nav.emottak.ediadapter.server.plugin.configureAuthentication
 import no.nav.emottak.ediadapter.server.plugin.configureCallLogging
 import no.nav.emottak.ediadapter.server.plugin.configureContentNegotiation
 import no.nav.emottak.ediadapter.server.plugin.configureMetrics
+import no.nav.emottak.ediadapter.server.plugin.configureOpenApi
 import no.nav.emottak.ediadapter.server.plugin.configureRoutes
 
 private val log = KotlinLogging.logger {}
@@ -47,6 +48,7 @@ internal fun ediAdapterModule(
         configureAuthentication()
         configureRoutes(ediClient, meterRegistry)
         configureCallLogging()
+        configureOpenApi()
     }
 }
 

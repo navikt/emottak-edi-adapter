@@ -3,6 +3,11 @@ package no.nav.emottak.ediadapter.server.plugin
 import arrow.core.raise.Raise
 import arrow.core.raise.recover
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.smiley4.ktoropenapi.get
+import io.github.smiley4.ktoropenapi.openApi
+import io.github.smiley4.ktoropenapi.post
+import io.github.smiley4.ktoropenapi.put
+import io.github.smiley4.ktorswaggerui.swaggerUI
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -24,8 +29,6 @@ import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
-import io.ktor.server.routing.post
-import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.micrometer.prometheus.PrometheusMeterRegistry
@@ -42,6 +45,22 @@ import no.nav.emottak.ediadapter.server.includeMetadata
 import no.nav.emottak.ediadapter.server.messageId
 import no.nav.emottak.ediadapter.server.messagesToFetch
 import no.nav.emottak.ediadapter.server.orderBy
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.GET_APPREC
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.GET_DOCUMENT
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.GET_MESSAGE
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.GET_MESSAGES
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.GET_STATUS
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.MARK_READ
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.POST_APPREC
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.POST_MESSAGE
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.getApprecDocs
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.getDocumentDocs
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.getMessageDocs
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.getMessagesDocs
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.getStatusDocs
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.markReadDocs
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.postApprecDocs
+import no.nav.emottak.ediadapter.server.plugin.MessagesApi.postMessageDocs
 import no.nav.emottak.ediadapter.server.receiverHerIds
 import no.nav.emottak.ediadapter.server.senderHerId
 import no.nav.emottak.ediadapter.server.toContent
@@ -62,10 +81,21 @@ fun Application.configureRoutes(
     registry: PrometheusMeterRegistry
 ) {
     routing {
+        swaggerRoutes()
         internalRoutes(registry)
 
         authenticate(config().azureAuth.issuer.value) {
             externalRoutes(ediClient)
+        }
+    }
+}
+
+fun Route.swaggerRoutes() {
+    route("api.json") {
+        openApi()
+    }
+    route("swagger") {
+        swaggerUI("/api.json") {
         }
     }
 }
@@ -86,7 +116,7 @@ fun Route.internalRoutes(registry: PrometheusMeterRegistry) {
 
 fun Route.externalRoutes(ediClient: HttpClient) {
     route("/api/v1") {
-        get("/messages") {
+        get(GET_MESSAGES, getMessagesDocs) {
             recover(
                 {
                     val params = messageQueryParams(call)
@@ -101,7 +131,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             ) { t: Throwable -> call.respondInternalError(t) }
         }
 
-        get("/messages/{messageId}") {
+        get(GET_MESSAGE, getMessageDocs) {
             recover(
                 {
                     val messageId = messageId(call)
@@ -116,7 +146,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             ) { t: Throwable -> call.respondInternalError(t) }
         }
 
-        get("/messages/{messageId}/document") {
+        get(GET_DOCUMENT, getDocumentDocs) {
             recover(
                 {
                     val messageId = messageId(call)
@@ -131,7 +161,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             ) { t: Throwable -> call.respondInternalError(t) }
         }
 
-        get("/messages/{messageId}/status") {
+        get(GET_STATUS, getStatusDocs) {
             recover(
                 {
                     val messageId = messageId(call)
@@ -146,7 +176,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             ) { t: Throwable -> call.respondInternalError(t) }
         }
 
-        get("/messages/{messageId}/apprec") {
+        get(GET_APPREC, getApprecDocs) {
             recover(
                 {
                     val messageId = messageId(call)
@@ -161,7 +191,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             ) { t: Throwable -> call.respondInternalError(t) }
         }
 
-        post("/messages") {
+        post(POST_MESSAGE, postMessageDocs) {
             val message = call.receive<PostMessageRequest>()
             recover(
                 {
@@ -179,7 +209,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             ) { t: Throwable -> call.respondInternalError(t) }
         }
 
-        post("/messages/{messageId}/apprec/{apprecSenderHerId}") {
+        post(POST_APPREC, postApprecDocs) {
             val appRec = call.receive<PostAppRecRequest>()
             recover(
                 {
@@ -200,7 +230,7 @@ fun Route.externalRoutes(ediClient: HttpClient) {
             ) { t: Throwable -> call.respondInternalError(t) }
         }
 
-        put("/messages/{messageId}/read/{herId}") {
+        put(MARK_READ, markReadDocs) {
             recover(
                 {
                     val messageId = messageId(call)
