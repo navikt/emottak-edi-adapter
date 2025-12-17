@@ -30,9 +30,11 @@ tasks {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_21)
+        freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
         freeCompilerArgs.add("-opt-in=kotlin.uuid.ExperimentalUuidApi")
         freeCompilerArgs.add("-opt-in=kotlin.io.encoding.ExperimentalEncodingApi")
         freeCompilerArgs.add("-opt-in=arrow.fx.coroutines.await.ExperimentalAwaitAllApi")
+        freeCompilerArgs.add("-opt-in=kotlinx.serialization.ExperimentalSerializationApi")
     }
 }
 
@@ -59,6 +61,9 @@ dependencies {
     implementation(libs.ktor.server.auth.jvm)
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.ktor.server.core)
+    implementation(libs.ktor.openapi)
+    implementation(libs.ktor.swagger.ui)
+    implementation(libs.schema.kenerator.serialization)
     implementation(libs.ktor.server.netty)
     implementation(libs.kotlin.logging)
     implementation(libs.token.validation.ktor.v3)

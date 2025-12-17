@@ -16,6 +16,9 @@ dependencyResolutionManagement {
             version("nimbus-jwt", "9.31")
             version("suspendapp", "0.5.0")
             version("ktor", "3.3.1")
+            version("ktor-swagger-ui", "5.4.0")
+            version("ktor-openapi", "5.4.0")
+            version("schema-kenerator-serialization", "2.5.0")
             version("kotlin-logging", "7.0.3")
             version("token-validation-ktor", "5.0.30")
             version("eclipse-angus", "2.0.2")
@@ -55,6 +58,10 @@ dependencyResolutionManagement {
                 "io.micrometer",
                 "micrometer-registry-prometheus"
             ).versionRef("prometheus")
+
+            library("ktor-swagger-ui", "io.github.smiley4", "ktor-swagger-ui").versionRef("ktor-swagger-ui")
+            library("ktor-openapi", "io.github.smiley4", "ktor-openapi").versionRef("ktor-openapi")
+            library("schema-kenerator-serialization", "io.github.smiley4","schema-kenerator-serialization").versionRef("schema-kenerator-serialization")
 
             library("kotlin-logging", "io.github.oshai", "kotlin-logging-jvm").versionRef("kotlin-logging")
             library("logback-classic", "ch.qos.logback", "logback-classic").versionRef("logback")
