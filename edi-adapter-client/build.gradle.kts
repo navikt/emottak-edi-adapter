@@ -19,6 +19,9 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.kotlin.logging)
+    testImplementation(testLibs.bundles.kotest)
+    testImplementation(testLibs.ktor.client.mock)
+    testImplementation(kotlin("test"))
 }
 
 tasks {
