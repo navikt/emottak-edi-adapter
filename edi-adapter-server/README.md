@@ -61,11 +61,6 @@ Metrics and health checks are provided through `internalRoutes`.
 | `/internal/health/readiness` | Returns “I'm ready! :)”     |
 | `/prometheus`                | Prometheus metrics endpoint |
 
-## External API reference
-
-The adapter wraps the NHN Meldingstjener API (EDI 2.0).
-Official documentation is available [here] (https://utviklerportal.nhn.no/informasjonstjenester/meldingsutveksling/edi-20/edi-20-ekstern-docs/openapi/meldingstjener-api-test-v2-internett)
-
 ## Local development
 
 Spinning up the adapter locally involves a few simple steps:
