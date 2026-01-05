@@ -34,6 +34,18 @@ All routes exposed by this adapter are under `/api/v1`.
 | POST   | `/api/v1/messages/{messageId}/apprec/{apprecSenderHerId}` | Send application receipt             | `POST /Messages/{id}/apprec/{appRecSenderHerId}` |
 | PUT    | `/api/v1/messages/{messageId}/read/{herId}`               | Mark message as read                 | `PUT /Messages/{id}/read/{herId}`                |
 
+## API documentation (Swagger)
+
+The EDI Adapter exposes OpenAPI/Swagger documentation for its internal API.
+
+When running the server locally, the documentation is available at:
+
+- `/swagger`
+
+The Swagger UI reflects the `/api/v1/*` endpoints exposed by this service and can be used to explore and test the API locally.
+
+Swagger is only intended for local development and internal use.
+
 ## Implementation overview
 
 Adapter API routes are defined in `externalRoutes` under `/api/v1`.
@@ -52,9 +64,7 @@ Metrics and health checks are provided through `internalRoutes`.
 ## External API reference
 
 The adapter wraps the NHN Meldingstjener API (EDI 2.0).
-Official documentation is available at:
-
-https://utviklerportal.nhn.no/informasjonstjenester/meldingstjener/edi-20/edi-20-ekstern-docs/openapi/meldingstjener-api-test-internett
+Official documentation is available [here] (https://utviklerportal.nhn.no/informasjonstjenester/meldingsutveksling/edi-20/edi-20-ekstern-docs/openapi/meldingstjener-api-test-v2-internett)
 
 ## Local development
 
