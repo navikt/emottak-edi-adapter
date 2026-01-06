@@ -1,10 +1,15 @@
 package no.nav.emottak.ediadapter.client
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equality.shouldBeEqualUsingFields
+import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldStartWith
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -19,11 +24,19 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.fullPath
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
+import no.nav.emottak.ediadapter.model.AppRecStatus
+import no.nav.emottak.ediadapter.model.ApprecInfo
+import no.nav.emottak.ediadapter.model.DeliveryState
 import no.nav.emottak.ediadapter.model.ErrorMessage
+import no.nav.emottak.ediadapter.model.GetBusinessDocumentResponse
+import no.nav.emottak.ediadapter.model.GetMessagesRequest
 import no.nav.emottak.ediadapter.model.Message
 import no.nav.emottak.ediadapter.model.Metadata
+import no.nav.emottak.ediadapter.model.PostAppRecRequest
 import no.nav.emottak.ediadapter.model.PostMessageRequest
+import no.nav.emottak.ediadapter.model.StatusInfo
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.text.Charsets.UTF_8
@@ -36,68 +49,119 @@ import kotlinx.serialization.json.Json as JsonUtil
 class EdiAdapterClientSpec : StringSpec(
     {
 
-        "getMessage returns message and no messageError if ediAdapterClient returns 200" {
-            val uuid = Uuid.random()
-            val existingMessage = Message(
-                id = uuid,
-                contentType = "application/xml",
-                receiverHerId = 42,
-                senderHerId = 1111,
-                businessDocumentId = Uuid.random().toString(),
-                businessDocumentGenDate = Clock.System.now(),
-                isAppRec = false,
-                sourceSystem = "Source system"
+        val errorMessage500 = ErrorMessage(
+            error = "Internal Server Error",
+            errorCode = 1000,
+            validationErrors = listOf("Example error"),
+            stackTrace = "[StackTrace]",
+            requestId = Uuid.random().toString()
+        )
+
+        val errorMessage404 = ErrorMessage(
+            error = "Not Found",
+            errorCode = 1000,
+            validationErrors = listOf("Example error"),
+            stackTrace = "[StackTrace]",
+            requestId = Uuid.random().toString()
+        )
+
+        "getApprecInfo returns apprecInfos and no messageError if response is 200" {
+            val apprecInfosStub = listOf(
+                ApprecInfo(
+                    receiverHerId = 1,
+                    appRecStatus = AppRecStatus.OK,
+                    appRecErrorList = emptyList()
+                )
             )
+            val uuid = Uuid.random()
             val ediClient = ediAdapterClient {
                 fakeScopedAuthHttpClient { request ->
                     request.method shouldBe HttpMethod.Get
-                    request.url.fullPath shouldBe "/api/v1/messages/$uuid"
+                    request.url.fullPath shouldBeEqual "/api/v1/messages/$uuid/apprec"
 
                     respond(
-                        content = JsonUtil.encodeToString(existingMessage),
+                        content = JsonUtil.encodeToString(apprecInfosStub),
                         headers = headersOf(ContentType, Json.toString()),
                         status = HttpStatusCode.OK
                     )
                 }
             }
 
-            val (message, errorMessage) = ediClient.getMessage(uuid)
+            val (apprecInfos, errorMessage) = ediClient.getApprecInfo(uuid)
 
-            message.shouldNotBeNull()
-            existingMessage shouldBeEqualUsingFields message
+            apprecInfos.shouldNotBeNull()
+            apprecInfos shouldContainExactly apprecInfosStub
             errorMessage.shouldBeNull()
         }
 
-        "getMessage returns messageError and no message if ediAdapterClient returns 404" {
+        "getApprecInfo returns messageError and no apprecInfos if response is 404" {
             val uuid = Uuid.random()
-            val errorMessageStub = ErrorMessage(
-                error = "Not Found",
-                errorCode = 1000,
-                validationErrors = listOf("Example error"),
-                stackTrace = "[StackTrace]",
-                requestId = Uuid.random().toString()
-            )
             val ediClient = ediAdapterClient {
                 fakeScopedAuthHttpClient { request ->
                     request.method shouldBe HttpMethod.Get
-                    request.url.fullPath shouldBe "/api/v1/messages/$uuid"
+                    request.url.fullPath shouldBeEqual "/api/v1/messages/$uuid/apprec"
 
                     respond(
-                        content = JsonUtil.encodeToString(errorMessageStub),
+                        content = JsonUtil.encodeToString(errorMessage404),
                         headers = headersOf(ContentType, Json.toString()),
                         status = HttpStatusCode.NotFound
                     )
                 }
             }
 
-            val (message, errorMessage) = ediClient.getMessage(uuid)
+            val (apprecInfos, errorMessage) = ediClient.getApprecInfo(uuid)
 
-            message.shouldBeNull()
+            apprecInfos.shouldBeNull()
             errorMessage.shouldNotBeNull()
-            errorMessage shouldBeEqualUsingFields errorMessageStub
+            errorMessage shouldBeEqualUsingFields errorMessage404
         }
 
-        "postMessage returns metadata and no messageError if ediAdapterClient returns 201" {
+        "getMessages returns messages and no messageError if response is 200" {
+            val messagesStub = listOf(Message(receiverHerId = 1))
+            val ediClient = ediAdapterClient {
+                fakeScopedAuthHttpClient { request ->
+                    request.method shouldBe HttpMethod.Get
+                    request.url.fullPath shouldStartWith "/api/v1/messages?receiverHerIds=1"
+
+                    respond(
+                        content = JsonUtil.encodeToString(messagesStub),
+                        headers = headersOf(ContentType, Json.toString()),
+                        status = HttpStatusCode.OK
+                    )
+                }
+            }
+
+            val getMessagesRequest = GetMessagesRequest(receiverHerIds = listOf(1))
+            val (messages, errorMessage) = ediClient.getMessages(getMessagesRequest)
+
+            messages.shouldNotBeNull()
+            messages shouldContainExactly messagesStub
+            errorMessage.shouldBeNull()
+        }
+
+        "getMessages returns messageError and no messages if response is 500" {
+            val ediClient = ediAdapterClient {
+                fakeScopedAuthHttpClient { request ->
+                    request.method shouldBe HttpMethod.Get
+                    request.url.fullPath shouldStartWith "/api/v1/messages?receiverHerIds=1"
+
+                    respond(
+                        content = JsonUtil.encodeToString(errorMessage500),
+                        headers = headersOf(ContentType, Json.toString()),
+                        status = HttpStatusCode.InternalServerError
+                    )
+                }
+            }
+
+            val getMessagesRequest = GetMessagesRequest(receiverHerIds = listOf(1))
+            val (messages, errorMessage) = ediClient.getMessages(getMessagesRequest)
+
+            messages.shouldBeNull()
+            errorMessage.shouldNotBeNull()
+            errorMessage shouldBeEqualUsingFields errorMessage500
+        }
+
+        "postMessage returns metadata and no messageError if response is 201" {
             val metadataStub = Metadata(
                 id = Uuid.random(),
                 location = "https://example.com/messages/1"
@@ -127,37 +191,304 @@ class EdiAdapterClientSpec : StringSpec(
             errorMessage.shouldBeNull()
         }
 
-        "postMessage returns messageError and no metadata if ediAdapterClient returns 400" {
-            val errorMessageStub = ErrorMessage(
-                error = "Model validation error occurred",
-                errorCode = 1000,
-                validationErrors = listOf("Example error"),
-                stackTrace = "[StackTrace]",
-                requestId = Uuid.random().toString()
-            )
+        "postMessage returns messageError and no metadata if response is 500" {
             val ediClient = ediAdapterClient {
                 fakeScopedAuthHttpClient { request ->
                     request.method shouldBe HttpMethod.Post
                     request.url.fullPath shouldBe "/api/v1/messages"
 
                     respond(
-                        content = JsonUtil.encodeToString(errorMessageStub),
+                        content = JsonUtil.encodeToString(errorMessage500),
                         headers = headersOf(ContentType, Json.toString()),
-                        status = HttpStatusCode.BadRequest
+                        status = HttpStatusCode.InternalServerError
                     )
                 }
             }
 
-            val badRequest = PostMessageRequest(
+            val postMessageRequest = PostMessageRequest(
                 businessDocument = base64EncodedDocument(),
-                contentType = "",
-                contentTransferEncoding = ""
+                contentType = "application/xml",
+                contentTransferEncoding = "base64"
             )
-            val (metadata, errorMessage) = ediClient.postMessage(badRequest)
+            val (metadata, errorMessage) = ediClient.postMessage(postMessageRequest)
 
             metadata.shouldBeNull()
             errorMessage.shouldNotBeNull()
-            errorMessage shouldBeEqualUsingFields errorMessageStub
+            errorMessage shouldBeEqualUsingFields errorMessage500
+        }
+
+        "getMessage returns message and no messageError if response is 200" {
+            val uuid = Uuid.random()
+            val messageStub = Message(
+                id = uuid,
+                contentType = "application/xml",
+                receiverHerId = 42,
+                senderHerId = 1111,
+                businessDocumentId = Uuid.random().toString(),
+                businessDocumentGenDate = Clock.System.now(),
+                isAppRec = false,
+                sourceSystem = "Source system"
+            )
+            val ediClient = ediAdapterClient {
+                fakeScopedAuthHttpClient { request ->
+                    request.method shouldBe HttpMethod.Get
+                    request.url.fullPath shouldBe "/api/v1/messages/$uuid"
+
+                    respond(
+                        content = JsonUtil.encodeToString(messageStub),
+                        headers = headersOf(ContentType, Json.toString()),
+                        status = HttpStatusCode.OK
+                    )
+                }
+            }
+
+            val (message, errorMessage) = ediClient.getMessage(uuid)
+
+            message.shouldNotBeNull()
+            message shouldBeEqualUsingFields messageStub
+            errorMessage.shouldBeNull()
+        }
+
+        "getMessage returns messageError and no message if response is 404" {
+            val uuid = Uuid.random()
+            val ediClient = ediAdapterClient {
+                fakeScopedAuthHttpClient { request ->
+                    request.method shouldBe HttpMethod.Get
+                    request.url.fullPath shouldBe "/api/v1/messages/$uuid"
+
+                    respond(
+                        content = JsonUtil.encodeToString(errorMessage404),
+                        headers = headersOf(ContentType, Json.toString()),
+                        status = HttpStatusCode.NotFound
+                    )
+                }
+            }
+
+            val (message, errorMessage) = ediClient.getMessage(uuid)
+
+            message.shouldBeNull()
+            errorMessage.shouldNotBeNull()
+            errorMessage shouldBeEqualUsingFields errorMessage404
+        }
+
+        "getBusinessDocument returns business document and no messageError if response is 200" {
+            val businessDocumentResponseStub = GetBusinessDocumentResponse(
+                businessDocument = base64EncodedDocument(),
+                contentType = "application/xml",
+                contentTransferEncoding = "base64"
+            )
+            val uuid = Uuid.random()
+            val ediClient = ediAdapterClient {
+                fakeScopedAuthHttpClient { request ->
+                    request.method shouldBe HttpMethod.Get
+                    request.url.fullPath shouldBeEqual "/api/v1/messages/$uuid/document"
+
+                    respond(
+                        content = JsonUtil.encodeToString(businessDocumentResponseStub),
+                        headers = headersOf(ContentType, Json.toString()),
+                        status = HttpStatusCode.OK
+                    )
+                }
+            }
+
+            val (businessDocumentResponse, errorMessage) = ediClient.getBusinessDocument(uuid)
+
+            businessDocumentResponse.shouldNotBeNull()
+            businessDocumentResponse shouldBeEqualUsingFields businessDocumentResponseStub
+            errorMessage.shouldBeNull()
+        }
+
+        "getBusinessDocument returns messageError and no business document if response is 404" {
+            val uuid = Uuid.random()
+            val ediClient = ediAdapterClient {
+                fakeScopedAuthHttpClient { request ->
+                    request.method shouldBe HttpMethod.Get
+                    request.url.fullPath shouldBeEqual "/api/v1/messages/$uuid/document"
+
+                    respond(
+                        content = JsonUtil.encodeToString(errorMessage404),
+                        headers = headersOf(ContentType, Json.toString()),
+                        status = HttpStatusCode.NotFound
+                    )
+                }
+            }
+
+            val (businessDocumentResponse, errorMessage) = ediClient.getBusinessDocument(uuid)
+
+            businessDocumentResponse.shouldBeNull()
+            errorMessage.shouldNotBeNull()
+            errorMessage shouldBeEqualUsingFields errorMessage404
+        }
+
+        "getMessageStatus returns statusInfos and no messageError if response is 200" {
+            val statusInfosStub = listOf(
+                StatusInfo(
+                    receiverHerId = 1,
+                    transportDeliveryState = DeliveryState.ACKNOWLEDGED,
+                    sent = true
+                )
+            )
+            val uuid = Uuid.random()
+            val ediClient = ediAdapterClient {
+                fakeScopedAuthHttpClient { request ->
+                    request.method shouldBe HttpMethod.Get
+                    request.url.fullPath shouldBeEqual "/api/v1/messages/$uuid/status"
+
+                    respond(
+                        content = JsonUtil.encodeToString(statusInfosStub),
+                        headers = headersOf(ContentType, Json.toString()),
+                        status = HttpStatusCode.OK
+                    )
+                }
+            }
+
+            val (statusInfos, errorMessage) = ediClient.getMessageStatus(uuid)
+
+            statusInfos.shouldNotBeNull()
+            statusInfos shouldContainExactly statusInfosStub
+            errorMessage.shouldBeNull()
+        }
+
+        "getMessageStatus returns messageError and no statusInfos if response is 404" {
+            val uuid = Uuid.random()
+            val ediClient = ediAdapterClient {
+                fakeScopedAuthHttpClient { request ->
+                    request.method shouldBe HttpMethod.Get
+                    request.url.fullPath shouldBeEqual "/api/v1/messages/$uuid/status"
+
+                    respond(
+                        content = JsonUtil.encodeToString(errorMessage404),
+                        headers = headersOf(ContentType, Json.toString()),
+                        status = HttpStatusCode.NotFound
+                    )
+                }
+            }
+
+            val (statusInfos, errorMessage) = ediClient.getMessageStatus(uuid)
+
+            statusInfos.shouldBeNull()
+            errorMessage.shouldNotBeNull()
+            errorMessage shouldBeEqualUsingFields errorMessage404
+        }
+
+        "postApprec returns metadata and no messageError if response is 201" {
+            val metadataStub = Metadata(
+                id = Uuid.random(),
+                location = "https://example.com/messages/1"
+            )
+            val uuid = Uuid.random()
+            val apprecSenderHerId = 100
+            val ediClient = ediAdapterClient {
+                fakeScopedAuthHttpClient { request ->
+                    request.method shouldBe HttpMethod.Post
+                    request.url.fullPath shouldBe "/api/v1/messages/$uuid/apprec/$apprecSenderHerId"
+
+                    respond(
+                        content = JsonUtil.encodeToString(metadataStub),
+                        headers = headersOf(ContentType, Json.toString()),
+                        status = HttpStatusCode.Created
+                    )
+                }
+            }
+
+            val apprecRequest = PostAppRecRequest(
+                appRecStatus = AppRecStatus.OK
+            )
+            val (metadata, errorMessage) = ediClient.postApprec(uuid, apprecSenderHerId, apprecRequest)
+
+            metadata.shouldNotBeNull()
+            metadata shouldBeEqualUsingFields metadataStub
+            errorMessage.shouldBeNull()
+        }
+
+        "postApprec returns messageError and no metadata if response is 500" {
+            val uuid = Uuid.random()
+            val apprecSenderHerId = 100
+            val ediClient = ediAdapterClient {
+                fakeScopedAuthHttpClient { request ->
+                    request.method shouldBe HttpMethod.Post
+                    request.url.fullPath shouldBe "/api/v1/messages/$uuid/apprec/$apprecSenderHerId"
+
+                    respond(
+                        content = JsonUtil.encodeToString(errorMessage500),
+                        headers = headersOf(ContentType, Json.toString()),
+                        status = HttpStatusCode.InternalServerError
+                    )
+                }
+            }
+
+            val apprecRequest = PostAppRecRequest(
+                appRecStatus = AppRecStatus.OK
+            )
+            val (metadata, errorMessage) = ediClient.postApprec(uuid, apprecSenderHerId, apprecRequest)
+
+            metadata.shouldBeNull()
+            errorMessage.shouldNotBeNull()
+            errorMessage shouldBeEqualUsingFields errorMessage500
+        }
+
+        "markMessageAsRead returns true and no messageError if response is 204" {
+            val uuid = Uuid.random()
+            val herId = 1
+            val ediClient = ediAdapterClient {
+                fakeScopedAuthHttpClient { request ->
+                    request.method shouldBe HttpMethod.Put
+                    request.url.fullPath shouldBeEqual "/api/v1/messages/$uuid/read/$herId"
+
+                    respond(
+                        content = JsonUtil.encodeToString(true),
+                        headers = headersOf(ContentType, Json.toString()),
+                        status = HttpStatusCode.NoContent
+                    )
+                }
+            }
+
+            val (isMessagesMarkedAsRead, errorMessage) = ediClient.markMessageAsRead(uuid, herId)
+
+            isMessagesMarkedAsRead.shouldNotBeNull()
+            isMessagesMarkedAsRead.shouldBeTrue()
+            errorMessage.shouldBeNull()
+        }
+
+        "markMessageAsRead returns messageError and no boolean value if response is 404" {
+            val uuid = Uuid.random()
+            val herId = 1
+            val ediClient = ediAdapterClient {
+                fakeScopedAuthHttpClient { request ->
+                    request.method shouldBe HttpMethod.Put
+                    request.url.fullPath shouldBeEqual "/api/v1/messages/$uuid/read/$herId"
+
+                    respond(
+                        content = JsonUtil.encodeToString(errorMessage404),
+                        headers = headersOf(ContentType, Json.toString()),
+                        status = HttpStatusCode.NotFound
+                    )
+                }
+            }
+
+            val (isMessagesMarkedAsRead, errorMessage) = ediClient.markMessageAsRead(uuid, herId)
+
+            isMessagesMarkedAsRead.shouldBeNull()
+            errorMessage.shouldNotBeNull()
+            errorMessage shouldBeEqualUsingFields errorMessage404
+        }
+
+        "throws cancellationException if attempting to use ediClientAdapter after calling close()" {
+            val ediClient = ediAdapterClient {
+                fakeScopedAuthHttpClient { request ->
+                    respond(
+                        content = JsonUtil.encodeToString(errorMessage404),
+                        headers = headersOf(ContentType, Json.toString()),
+                        status = HttpStatusCode.NotFound
+                    )
+                }
+            }
+
+            ediClient.close()
+
+            shouldThrow<CancellationException> {
+                ediClient.getMessage(Uuid.random())
+            }
         }
     }
 )
