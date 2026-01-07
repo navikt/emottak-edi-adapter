@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ErrorMessage(
+data class ErrorMessage constructor(
     @SerialName("Error")
     val error: String? = null,
 
