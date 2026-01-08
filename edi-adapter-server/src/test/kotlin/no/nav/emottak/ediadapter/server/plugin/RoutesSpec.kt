@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server.plugin
+package no.nav.helsemelding.ediadapter.server.plugin
 
 import com.nimbusds.jwt.SignedJWT
 import io.kotest.core.spec.style.StringSpec
@@ -41,9 +41,9 @@ import io.ktor.server.routing.Route
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.TestApplicationBuilder
 import io.ktor.server.testing.testApplication
-import no.nav.emottak.ediadapter.model.Metadata
-import no.nav.emottak.ediadapter.server.auth.AuthConfig.Companion.getTokenSupportConfig
-import no.nav.emottak.ediadapter.server.config
+import no.nav.helsemelding.ediadapter.model.Metadata
+import no.nav.helsemelding.ediadapter.server.auth.AuthConfig.Companion.getTokenSupportConfig
+import no.nav.helsemelding.ediadapter.server.config
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.token.support.v3.tokenValidationSupport
 import kotlin.io.encoding.Base64
@@ -66,7 +66,7 @@ class RoutesSpec : StringSpec(
             )
         }
 
-        val invalidAudience = "api://dev-fss.team-emottak.some-other-service/.default"
+        val invalidAudience = "api://dev-fss.team-helsemelding.some-other-service/.default"
 
         beforeSpec {
             mockOAuth2Server = MockOAuth2Server().also { it.start(port = 3344) }
@@ -235,7 +235,7 @@ class RoutesSpec : StringSpec(
                     "businessDocumentId": "10",
                     "businessDocumentGenDate": "2008-11-26T19:31:17.281+00:00",
                     "isAppRec": false,
-                    "sourceSystem": "eMottak EDI 2.0 edi-adapter, v1.0"
+                    "sourceSystem": "helsemelding EDI 2.0 edi-adapter, v1.0"
                 }"""
                 )
             }
@@ -254,7 +254,7 @@ class RoutesSpec : StringSpec(
                     "businessDocumentId": "10",
                     "businessDocumentGenDate": "2008-11-26T19:31:17.281+00:00",
                     "isAppRec": false,
-                    "sourceSystem": "eMottak EDI 2.0 edi-adapter, v1.0"
+                    "sourceSystem": "helsemelding EDI 2.0 edi-adapter, v1.0"
                 }"""
             }
         }
@@ -309,7 +309,7 @@ class RoutesSpec : StringSpec(
                      "businessDocumentId": "100",
                      "businessDocumentGenDate": "2008-11-26T19:31:17.281+00:00",
                      "isAppRec": false,
-                     "sourceSystem": "eMottak EDI 2.0 edi-adapter, v1.0"
+                     "sourceSystem": "helsemelding EDI 2.0 edi-adapter, v1.0"
                     }"""
                 )
             }
@@ -328,7 +328,7 @@ class RoutesSpec : StringSpec(
                      "businessDocumentId": "100",
                      "businessDocumentGenDate": "2008-11-26T19:31:17.281+00:00",
                      "isAppRec": false,
-                     "sourceSystem": "eMottak EDI 2.0 edi-adapter, v1.0"
+                     "sourceSystem": "helsemelding EDI 2.0 edi-adapter, v1.0"
                     }"""
             }
         }

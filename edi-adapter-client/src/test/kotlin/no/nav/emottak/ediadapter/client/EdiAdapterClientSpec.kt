@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.client
+package no.nav.helsemelding.ediadapter.client
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
@@ -26,17 +26,17 @@ import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
-import no.nav.emottak.ediadapter.model.AppRecStatus
-import no.nav.emottak.ediadapter.model.ApprecInfo
-import no.nav.emottak.ediadapter.model.DeliveryState
-import no.nav.emottak.ediadapter.model.ErrorMessage
-import no.nav.emottak.ediadapter.model.GetBusinessDocumentResponse
-import no.nav.emottak.ediadapter.model.GetMessagesRequest
-import no.nav.emottak.ediadapter.model.Message
-import no.nav.emottak.ediadapter.model.Metadata
-import no.nav.emottak.ediadapter.model.PostAppRecRequest
-import no.nav.emottak.ediadapter.model.PostMessageRequest
-import no.nav.emottak.ediadapter.model.StatusInfo
+import no.nav.helsemelding.ediadapter.model.AppRecStatus
+import no.nav.helsemelding.ediadapter.model.ApprecInfo
+import no.nav.helsemelding.ediadapter.model.DeliveryState
+import no.nav.helsemelding.ediadapter.model.ErrorMessage
+import no.nav.helsemelding.ediadapter.model.GetBusinessDocumentResponse
+import no.nav.helsemelding.ediadapter.model.GetMessagesRequest
+import no.nav.helsemelding.ediadapter.model.Message
+import no.nav.helsemelding.ediadapter.model.Metadata
+import no.nav.helsemelding.ediadapter.model.PostAppRecRequest
+import no.nav.helsemelding.ediadapter.model.PostMessageRequest
+import no.nav.helsemelding.ediadapter.model.StatusInfo
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.text.Charsets.UTF_8

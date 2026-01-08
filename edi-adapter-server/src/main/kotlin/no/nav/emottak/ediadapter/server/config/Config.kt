@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server.config
+package no.nav.helsemelding.ediadapter.server.config
 
 import io.ktor.client.plugins.logging.LogLevel
 import java.net.URI

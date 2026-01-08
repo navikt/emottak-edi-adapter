@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server
+package no.nav.helsemelding.ediadapter.server
 
 import io.ktor.http.ContentType.Text.Plain
 import io.ktor.http.HttpStatusCode

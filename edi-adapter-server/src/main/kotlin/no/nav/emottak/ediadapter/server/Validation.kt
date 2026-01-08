@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server
+package no.nav.helsemelding.ediadapter.server
 
 import arrow.core.raise.Raise
 import arrow.core.raise.ensure

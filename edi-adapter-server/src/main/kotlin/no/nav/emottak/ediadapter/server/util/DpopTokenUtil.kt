@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server.util
+package no.nav.helsemelding.ediadapter.server.util
 
 import com.nimbusds.oauth2.sdk.token.AccessTokenType.DPOP
 import com.nimbusds.openid.connect.sdk.Nonce
@@ -13,10 +13,10 @@ import io.ktor.http.ContentType.Application.FormUrlEncoded
 import io.ktor.http.Parameters
 import io.ktor.http.contentType
 import io.ktor.http.formUrlEncode
-import no.nav.emottak.ediadapter.server.config.Config
-import no.nav.emottak.ediadapter.server.model.DpopTokens
-import no.nav.emottak.ediadapter.server.model.TokenInfo
-import no.nav.emottak.ediadapter.server.model.toDpopTokens
+import no.nav.helsemelding.ediadapter.server.config.Config
+import no.nav.helsemelding.ediadapter.server.model.DpopTokens
+import no.nav.helsemelding.ediadapter.server.model.TokenInfo
+import no.nav.helsemelding.ediadapter.server.model.toDpopTokens
 
 class DpopTokenUtil(
     private val config: Config,

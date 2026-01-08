@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server.util
+package no.nav.helsemelding.ediadapter.server.util
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm.RSA256
@@ -13,7 +13,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.ktor.http.HttpMethod.Companion.Get
 import io.ktor.http.HttpMethod.Companion.Post
-import no.nav.emottak.ediadapter.server.config
+import no.nav.helsemelding.ediadapter.server.config
 import java.net.URI
 import java.util.Base64.getUrlDecoder
 import kotlin.uuid.Uuid

@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server
+package no.nav.helsemelding.ediadapter.server
 
 import arrow.fx.coroutines.ExitCase
 import arrow.fx.coroutines.ResourceScope
@@ -17,10 +17,10 @@ import io.ktor.serialization.kotlinx.json.json
 import io.micrometer.prometheus.PrometheusConfig.DEFAULT
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.serialization.json.Json
-import no.nav.emottak.ediadapter.server.config.Config
-import no.nav.emottak.ediadapter.server.plugin.DpopAuth
-import no.nav.emottak.ediadapter.server.util.DpopJwtProvider
-import no.nav.emottak.ediadapter.server.util.DpopTokenUtil
+import no.nav.helsemelding.ediadapter.server.config.Config
+import no.nav.helsemelding.ediadapter.server.plugin.DpopAuth
+import no.nav.helsemelding.ediadapter.server.util.DpopJwtProvider
+import no.nav.helsemelding.ediadapter.server.util.DpopTokenUtil
 
 private val log = KotlinLogging.logger {}
 

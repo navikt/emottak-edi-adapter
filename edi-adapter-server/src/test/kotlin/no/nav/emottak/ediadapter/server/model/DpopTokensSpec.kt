@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server.model
+package no.nav.helsemelding.ediadapter.server.model
 
 import com.nimbusds.oauth2.sdk.token.DPoPAccessToken
 import io.kotest.core.spec.style.StringSpec

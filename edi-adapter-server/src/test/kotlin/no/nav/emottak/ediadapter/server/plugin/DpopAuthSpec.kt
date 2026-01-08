@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server.plugin
+package no.nav.helsemelding.ediadapter.server.plugin
 
 import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.oauth2.sdk.token.DPoPAccessToken
@@ -14,9 +14,9 @@ import io.ktor.http.HttpMethod.Companion.Get
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.http.headersOf
 import kotlinx.datetime.Clock
-import no.nav.emottak.ediadapter.server.config
-import no.nav.emottak.ediadapter.server.model.DpopTokens
-import no.nav.emottak.ediadapter.server.util.DpopJwtProvider
+import no.nav.helsemelding.ediadapter.server.config
+import no.nav.helsemelding.ediadapter.server.model.DpopTokens
+import no.nav.helsemelding.ediadapter.server.util.DpopJwtProvider
 import kotlin.time.Duration.Companion.seconds
 
 class DpopAuthSpec : StringSpec(

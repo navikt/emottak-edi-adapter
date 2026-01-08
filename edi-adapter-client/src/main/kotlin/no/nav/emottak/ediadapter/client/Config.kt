@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.client
+package no.nav.helsemelding.ediadapter.client
 
 import java.net.URL
 import java.time.Duration

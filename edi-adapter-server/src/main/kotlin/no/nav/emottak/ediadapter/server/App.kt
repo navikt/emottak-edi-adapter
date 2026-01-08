@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server
+package no.nav.helsemelding.ediadapter.server
 
 import arrow.continuations.SuspendApp
 import arrow.continuations.ktor.server
@@ -11,12 +11,12 @@ import io.ktor.server.netty.Netty
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.awaitCancellation
-import no.nav.emottak.ediadapter.server.plugin.configureAuthentication
-import no.nav.emottak.ediadapter.server.plugin.configureCallLogging
-import no.nav.emottak.ediadapter.server.plugin.configureContentNegotiation
-import no.nav.emottak.ediadapter.server.plugin.configureMetrics
-import no.nav.emottak.ediadapter.server.plugin.configureOpenApi
-import no.nav.emottak.ediadapter.server.plugin.configureRoutes
+import no.nav.helsemelding.ediadapter.server.plugin.configureAuthentication
+import no.nav.helsemelding.ediadapter.server.plugin.configureCallLogging
+import no.nav.helsemelding.ediadapter.server.plugin.configureContentNegotiation
+import no.nav.helsemelding.ediadapter.server.plugin.configureMetrics
+import no.nav.helsemelding.ediadapter.server.plugin.configureOpenApi
+import no.nav.helsemelding.ediadapter.server.plugin.configureRoutes
 
 private val log = KotlinLogging.logger {}
 

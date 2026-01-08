@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.model
+package no.nav.helsemelding.ediadapter.model
 
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant

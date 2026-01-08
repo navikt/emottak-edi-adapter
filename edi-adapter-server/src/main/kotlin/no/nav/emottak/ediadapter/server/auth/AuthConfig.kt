@@ -1,6 +1,6 @@
-package no.nav.emottak.ediadapter.server.auth
+package no.nav.helsemelding.ediadapter.server.auth
 
-import no.nav.emottak.ediadapter.server.config
+import no.nav.helsemelding.ediadapter.server.config
 import no.nav.security.token.support.v3.IssuerConfig
 import no.nav.security.token.support.v3.TokenSupportConfig
 

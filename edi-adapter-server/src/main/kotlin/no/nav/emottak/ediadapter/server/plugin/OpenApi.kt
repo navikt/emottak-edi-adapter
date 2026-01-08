@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server.plugin
+package no.nav.helsemelding.ediadapter.server.plugin
 
 import io.github.smiley4.ktoropenapi.OpenApi
 import io.github.smiley4.ktoropenapi.config.ExampleEncoder

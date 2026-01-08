@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.client
+package no.nav.helsemelding.ediadapter.client
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
@@ -13,15 +13,15 @@ import io.ktor.client.statement.request
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import no.nav.emottak.ediadapter.model.ApprecInfo
-import no.nav.emottak.ediadapter.model.ErrorMessage
-import no.nav.emottak.ediadapter.model.GetBusinessDocumentResponse
-import no.nav.emottak.ediadapter.model.GetMessagesRequest
-import no.nav.emottak.ediadapter.model.Message
-import no.nav.emottak.ediadapter.model.Metadata
-import no.nav.emottak.ediadapter.model.PostAppRecRequest
-import no.nav.emottak.ediadapter.model.PostMessageRequest
-import no.nav.emottak.ediadapter.model.StatusInfo
+import no.nav.helsemelding.ediadapter.model.ApprecInfo
+import no.nav.helsemelding.ediadapter.model.ErrorMessage
+import no.nav.helsemelding.ediadapter.model.GetBusinessDocumentResponse
+import no.nav.helsemelding.ediadapter.model.GetMessagesRequest
+import no.nav.helsemelding.ediadapter.model.Message
+import no.nav.helsemelding.ediadapter.model.Metadata
+import no.nav.helsemelding.ediadapter.model.PostAppRecRequest
+import no.nav.helsemelding.ediadapter.model.PostMessageRequest
+import no.nav.helsemelding.ediadapter.model.StatusInfo
 import kotlin.uuid.Uuid
 
 private val log = KotlinLogging.logger {}

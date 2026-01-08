@@ -1,10 +1,10 @@
-package no.nav.emottak.ediadapter.server.plugin
+package no.nav.helsemelding.ediadapter.server.plugin
 
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.http.URLBuilder
-import no.nav.emottak.ediadapter.server.model.DpopTokens
-import no.nav.emottak.ediadapter.server.util.DpopJwtProvider
+import no.nav.helsemelding.ediadapter.server.model.DpopTokens
+import no.nav.helsemelding.ediadapter.server.util.DpopJwtProvider
 import java.net.URI
 
 private const val QUERY_PARAMETERS = "?"

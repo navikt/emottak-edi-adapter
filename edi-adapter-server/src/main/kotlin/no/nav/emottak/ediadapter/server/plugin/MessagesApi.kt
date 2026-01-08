@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server.plugin
+package no.nav.helsemelding.ediadapter.server.plugin
 
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
@@ -7,19 +7,19 @@ import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.NoContent
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
-import no.nav.emottak.ediadapter.model.AppRecError
-import no.nav.emottak.ediadapter.model.AppRecStatus
-import no.nav.emottak.ediadapter.model.AppRecStatus.OK_ERROR_IN_MESSAGE_PART
-import no.nav.emottak.ediadapter.model.ApprecInfo
-import no.nav.emottak.ediadapter.model.DeliveryState.ACKNOWLEDGED
-import no.nav.emottak.ediadapter.model.EbXmlInfo
-import no.nav.emottak.ediadapter.model.GetBusinessDocumentResponse
-import no.nav.emottak.ediadapter.model.Message
-import no.nav.emottak.ediadapter.model.Metadata
-import no.nav.emottak.ediadapter.model.OrderBy
-import no.nav.emottak.ediadapter.model.PostAppRecRequest
-import no.nav.emottak.ediadapter.model.PostMessageRequest
-import no.nav.emottak.ediadapter.model.StatusInfo
+import no.nav.helsemelding.ediadapter.model.AppRecError
+import no.nav.helsemelding.ediadapter.model.AppRecStatus
+import no.nav.helsemelding.ediadapter.model.AppRecStatus.OK_ERROR_IN_MESSAGE_PART
+import no.nav.helsemelding.ediadapter.model.ApprecInfo
+import no.nav.helsemelding.ediadapter.model.DeliveryState.ACKNOWLEDGED
+import no.nav.helsemelding.ediadapter.model.EbXmlInfo
+import no.nav.helsemelding.ediadapter.model.GetBusinessDocumentResponse
+import no.nav.helsemelding.ediadapter.model.Message
+import no.nav.helsemelding.ediadapter.model.Metadata
+import no.nav.helsemelding.ediadapter.model.OrderBy
+import no.nav.helsemelding.ediadapter.model.PostAppRecRequest
+import no.nav.helsemelding.ediadapter.model.PostMessageRequest
+import no.nav.helsemelding.ediadapter.model.StatusInfo
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -149,7 +149,7 @@ object MessagesApi {
                                 businessDocumentId = "cc169595-bbf0-11dd-9ca9-117f241b4a68",
                                 businessDocumentGenDate = Instant.parse("2008-11-26T19:31:17.281Z"),
                                 isAppRec = false,
-                                sourceSystem = "eMottak EDI 2.0 edi-adapter, v1.0"
+                                sourceSystem = "helsemelding EDI 2.0 edi-adapter, v1.0"
                             ),
                             Message(
                                 id = Uuid.parse("68e60a2b-5990-408c-b99b-089d8657d6ed"),
@@ -159,7 +159,7 @@ object MessagesApi {
                                 businessDocumentId = "cc169595-bbf0-11dd-9ca9-117f241b4a68",
                                 businessDocumentGenDate = Instant.parse("2008-11-26T19:31:17.281Z"),
                                 isAppRec = false,
-                                sourceSystem = "eMottak EDI 2.0 edi-adapter, v1.0"
+                                sourceSystem = "helsemelding EDI 2.0 edi-adapter, v1.0"
                             )
                         )
                     }
@@ -224,7 +224,7 @@ object MessagesApi {
                             Instant.parse("2008-11-26T19:31:17.281Z"),
                             isAppRec = false,
                             sourceSystem =
-                            "eMottak EDI 2.0 edi-adapter, v1.0"
+                            "helsemelding EDI 2.0 edi-adapter, v1.0"
                         )
                     }
                 }

@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server.util
+package no.nav.helsemelding.ediadapter.server.util
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
@@ -18,7 +18,7 @@ import io.ktor.http.HttpMethod.Companion.Post
 import net.minidev.json.JSONObject
 import net.minidev.json.parser.JSONParser
 import net.minidev.json.parser.JSONParser.MODE_PERMISSIVE
-import no.nav.emottak.ediadapter.server.config.Config
+import no.nav.helsemelding.ediadapter.server.config.Config
 import java.io.File
 import java.net.URI
 import java.security.MessageDigest.getInstance

@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server.util
+package no.nav.helsemelding.ediadapter.server.util
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
@@ -15,7 +15,7 @@ import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
-import no.nav.emottak.ediadapter.server.config
+import no.nav.helsemelding.ediadapter.server.config
 
 class DpopTokenUtilSpec : StringSpec(
     {

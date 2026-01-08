@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.server.plugin
+package no.nav.helsemelding.ediadapter.server.plugin
 
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application

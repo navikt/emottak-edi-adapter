@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.client
+package no.nav.helsemelding.ediadapter.client
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

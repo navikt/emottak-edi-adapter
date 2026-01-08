@@ -1,4 +1,4 @@
-package no.nav.emottak.ediadapter.client
+package no.nav.helsemelding.ediadapter.client
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -13,7 +13,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.http.parameters
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import no.nav.emottak.ediadapter.client.Config.AzureAuth
+import no.nav.helsemelding.ediadapter.client.Config.AzureAuth
 
 fun scopedAuthHttpClient(scope: String): () -> HttpClient = { httpClient(httpTokenClient(), scope) }
 
