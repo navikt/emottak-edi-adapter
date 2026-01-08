@@ -66,7 +66,7 @@ class RoutesSpec : StringSpec(
             )
         }
 
-        val invalidAudience = "api://dev-fss.team-helsemelding.some-other-service/.default"
+        val invalidAudience = "api://dev-fss.helsemelding.some-other-service/.default"
 
         beforeSpec {
             mockOAuth2Server = MockOAuth2Server().also { it.start(port = 3344) }

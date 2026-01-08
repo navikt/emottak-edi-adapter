@@ -2,9 +2,9 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: "edi-adapter"
-  namespace: "team-helsemelding"
+  namespace: "helsemelding"
   labels:
-    "team": "team-helsemelding"
+    "team": "helsemelding"
   annotations:
     texas.nais.io/enabled: "true"
 spec:
