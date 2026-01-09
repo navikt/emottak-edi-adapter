@@ -66,7 +66,7 @@ Metrics and health checks are provided through `internalRoutes`.
 Spinning up the adapter locally involves a few simple steps:
 
 1. Login to the NAIS Console: https://console.nav.cloud.nais.io
-2. Localize the `emottak-nhn-edi` secret and copy the `keypair-jwk` value
+2. Localize the `helsemelding-nhn-edi` secret and copy the `keypair-jwk` value
 3. Paste the value into `src/test/resources/keypair-jwk.json`
 4. Run the adapter (typically by running the `App` class in your IDE)
 

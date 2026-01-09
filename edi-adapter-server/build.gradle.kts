@@ -81,5 +81,5 @@ dependencies {
 }
 
 application {
-    mainClass.set("no.nav.emottak.ediadapter.server.AppKt")
+    mainClass.set("no.nav.helsemelding.ediadapter.server.AppKt")
 }

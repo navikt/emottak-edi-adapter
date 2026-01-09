@@ -1,6 +1,6 @@
-# emottak-edi-adapter
+# helsemelding-edi-adapter
 
-The **emottak-edi-adapter** provides a stable internal interface wrapping the external NHN Meldingstjener API (EDI 2.0).
+The **helsemelding-edi-adapter** provides a stable internal interface wrapping the external NHN Meldingstjener API (EDI 2.0).
 
 The adapter handles all authentication towards NHN, including [DPoP](https://utviklerportal.nhn.no/informasjonstjenester/helseid/bruksmoenstre-og-eksempelkode/bruk-av-helseid/docs/dpop/dpop_enmd), so consumers of the internal API do not need to manage authentication.
 

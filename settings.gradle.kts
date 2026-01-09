@@ -61,7 +61,7 @@ dependencyResolutionManagement {
 
             library("ktor-swagger-ui", "io.github.smiley4", "ktor-swagger-ui").versionRef("ktor-swagger-ui")
             library("ktor-openapi", "io.github.smiley4", "ktor-openapi").versionRef("ktor-openapi")
-            library("schema-kenerator-serialization", "io.github.smiley4","schema-kenerator-serialization").versionRef("schema-kenerator-serialization")
+            library("schema-kenerator-serialization", "io.github.smiley4", "schema-kenerator-serialization").versionRef("schema-kenerator-serialization")
 
             library("kotlin-logging", "io.github.oshai", "kotlin-logging-jvm").versionRef("kotlin-logging")
             library("logback-classic", "ch.qos.logback", "logback-classic").versionRef("logback")
@@ -136,7 +136,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "emottak-edi-adapter"
+rootProject.name = "helsemelding-edi-adapter"
 
 include("edi-adapter-server")
 include("edi-adapter-model")

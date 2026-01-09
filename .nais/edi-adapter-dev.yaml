@@ -2,9 +2,9 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: "edi-adapter"
-  namespace: "team-emottak"
+  namespace: "helsemelding"
   labels:
-    "team": "team-emottak"
+    "team": "helsemelding"
   annotations:
     texas.nais.io/enabled: "true"
 spec:
@@ -55,8 +55,8 @@ spec:
   ingresses:
     - "https://edi-adapter.intern.dev.nav.no"
   filesFrom:
-    - secret: emottak-nhn-edi
-      mountPath: /var/run/secrets/emottak-nhn-edi
+    - secret: helsemelding-nhn-edi
+      mountPath: /var/run/secrets/helsemelding-nhn-edi
   vault:
     enabled: true
     paths:
@@ -78,7 +78,7 @@ spec:
     - name: NHN_BASE_URL
       value: "https://api.tjener.test.melding.nhn.no"
     - name: NHN_KEYPAIR_PATH
-      value: "/var/run/secrets/emottak-nhn-edi/keypair-jwk"
+      value: "/var/run/secrets/helsemelding-nhn-edi/keypair-jwk"
     - name: NHN_TOKEN_ENDPOINT
       value: "https://helseid-sts.test.nhn.no/connect/token"
     - name: NHN_CLIENT_KEY_ID
