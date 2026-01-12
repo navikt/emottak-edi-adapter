@@ -68,7 +68,9 @@ Spinning up the adapter locally involves a few simple steps:
 1. Login to the NAIS Console: https://console.nav.cloud.nais.io
 2. Localize the `helsemelding-nhn-edi` secret and copy the `keypair-jwk` value
 3. Paste the value into `src/test/resources/keypair-jwk.json`
-4. Run the adapter (typically by running the `App` class in your IDE)
+4. [Disable authentication to AzureAD](#Disable-authentication-to-AzureAD)
+5. Run the adapter (typically by running the `App` class in your IDE). 
+   See [Running the adapter in IntelliJ](#Running-the-adapter-in-IntelliJ) for troubleshooting.
 
 When the server is running, it is curlable, for example:
 
@@ -79,4 +81,32 @@ The adapter will POST and GET data to and from the NHN test environment in the b
 **NOTE:**  
 If `NHN_KEYPAIR_PATH` is not set locally (this is typically only set in NAIS), Hoplite defaults to the test configuration defined in `application.conf`.
 
+### Disable authentication to AzureAD
+
+Comment out the following in App.kt:
+```kotlin
+configureAuthentication()
+```
+
+In Routes.kt change the following:
+```kotlin
+authenticate(config().azureAuth.issuer.value) {
+    externalRoutes(ediClient)
+}
+```
+
+to:
+```kotlin
+// authenticate(config().azureAuth.issuer.value) {
+    externalRoutes(ediClient)
+// }
+```
+
+### Running the adapter in IntelliJ
+
+Change working directory from (example for Windows):
+> path\to\project\helsemelding-edi-adapter
+
+to:
+> path\to\project\helsemelding-edi-adapter\edi-adapter-server
 
