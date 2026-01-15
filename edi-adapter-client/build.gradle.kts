@@ -9,6 +9,7 @@ plugins {
 
 dependencies {
     api(project(":edi-adapter-model"))
+    implementation(libs.arrow.core)
     implementation(libs.arrow.functions)
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.hocon)
@@ -20,6 +21,7 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.kotlin.logging)
     testImplementation(testLibs.bundles.kotest)
+    testImplementation(testLibs.kotest.assertions.arrow)
     testImplementation(testLibs.ktor.client.mock)
     testImplementation(kotlin("test"))
 }
@@ -56,7 +58,7 @@ publishing {
         create<MavenPublication>("mavenJava") {
             groupId = "no.nav.helsemelding"
             artifactId = "edi-adapter-client"
-            version = "0.0.4"
+            version = "0.0.5"
             from(components["java"])
         }
     }

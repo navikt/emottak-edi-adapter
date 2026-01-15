@@ -1,13 +1,13 @@
 package no.nav.helsemelding.ediadapter.client
 
+import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equality.shouldBeEqualUsingFields
 import io.kotest.matchers.equals.shouldBeEqual
-import io.kotest.matchers.nulls.shouldBeNull
-import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import io.ktor.client.HttpClient
@@ -87,11 +87,8 @@ class EdiAdapterClientSpec : StringSpec(
                 }
             }
 
-            val (apprecInfos, errorMessage) = ediClient.getApprecInfo(uuid)
-
-            apprecInfos.shouldNotBeNull()
+            val apprecInfos = ediClient.getApprecInfo(uuid).shouldBeRight()
             apprecInfos shouldContainExactly apprecInfosStub
-            errorMessage.shouldBeNull()
         }
 
         "getApprecInfo returns messageError and no apprecInfos if response is 404" {
@@ -109,10 +106,7 @@ class EdiAdapterClientSpec : StringSpec(
                 }
             }
 
-            val (apprecInfos, errorMessage) = ediClient.getApprecInfo(uuid)
-
-            apprecInfos.shouldBeNull()
-            errorMessage.shouldNotBeNull()
+            val errorMessage = ediClient.getApprecInfo(uuid).shouldBeLeft()
             errorMessage shouldBeEqualUsingFields errorMessage404
         }
 
@@ -132,11 +126,8 @@ class EdiAdapterClientSpec : StringSpec(
             }
 
             val getMessagesRequest = GetMessagesRequest(receiverHerIds = listOf(1))
-            val (messages, errorMessage) = ediClient.getMessages(getMessagesRequest)
-
-            messages.shouldNotBeNull()
+            val messages = ediClient.getMessages(getMessagesRequest).shouldBeRight()
             messages shouldContainExactly messagesStub
-            errorMessage.shouldBeNull()
         }
 
         "getMessages returns messageError and no messages if response is 500" {
@@ -154,10 +145,7 @@ class EdiAdapterClientSpec : StringSpec(
             }
 
             val getMessagesRequest = GetMessagesRequest(receiverHerIds = listOf(1))
-            val (messages, errorMessage) = ediClient.getMessages(getMessagesRequest)
-
-            messages.shouldBeNull()
-            errorMessage.shouldNotBeNull()
+            val errorMessage = ediClient.getMessages(getMessagesRequest).shouldBeLeft()
             errorMessage shouldBeEqualUsingFields errorMessage500
         }
 
@@ -184,11 +172,8 @@ class EdiAdapterClientSpec : StringSpec(
                 contentType = "application/xml",
                 contentTransferEncoding = "base64"
             )
-            val (metadata, errorMessage) = ediClient.postMessage(request)
-
-            metadata.shouldNotBeNull()
+            val metadata = ediClient.postMessage(request).shouldBeRight()
             metadata shouldBeEqualUsingFields metadataStub
-            errorMessage.shouldBeNull()
         }
 
         "postMessage returns messageError and no metadata if response is 500" {
@@ -210,10 +195,7 @@ class EdiAdapterClientSpec : StringSpec(
                 contentType = "application/xml",
                 contentTransferEncoding = "base64"
             )
-            val (metadata, errorMessage) = ediClient.postMessage(postMessageRequest)
-
-            metadata.shouldBeNull()
-            errorMessage.shouldNotBeNull()
+            val errorMessage = ediClient.postMessage(postMessageRequest).shouldBeLeft()
             errorMessage shouldBeEqualUsingFields errorMessage500
         }
 
@@ -242,11 +224,8 @@ class EdiAdapterClientSpec : StringSpec(
                 }
             }
 
-            val (message, errorMessage) = ediClient.getMessage(uuid)
-
-            message.shouldNotBeNull()
+            val message = ediClient.getMessage(uuid).shouldBeRight()
             message shouldBeEqualUsingFields messageStub
-            errorMessage.shouldBeNull()
         }
 
         "getMessage returns messageError and no message if response is 404" {
@@ -264,10 +243,7 @@ class EdiAdapterClientSpec : StringSpec(
                 }
             }
 
-            val (message, errorMessage) = ediClient.getMessage(uuid)
-
-            message.shouldBeNull()
-            errorMessage.shouldNotBeNull()
+            val errorMessage = ediClient.getMessage(uuid).shouldBeLeft()
             errorMessage shouldBeEqualUsingFields errorMessage404
         }
 
@@ -291,11 +267,8 @@ class EdiAdapterClientSpec : StringSpec(
                 }
             }
 
-            val (businessDocumentResponse, errorMessage) = ediClient.getBusinessDocument(uuid)
-
-            businessDocumentResponse.shouldNotBeNull()
+            val businessDocumentResponse = ediClient.getBusinessDocument(uuid).shouldBeRight()
             businessDocumentResponse shouldBeEqualUsingFields businessDocumentResponseStub
-            errorMessage.shouldBeNull()
         }
 
         "getBusinessDocument returns messageError and no business document if response is 404" {
@@ -313,10 +286,7 @@ class EdiAdapterClientSpec : StringSpec(
                 }
             }
 
-            val (businessDocumentResponse, errorMessage) = ediClient.getBusinessDocument(uuid)
-
-            businessDocumentResponse.shouldBeNull()
-            errorMessage.shouldNotBeNull()
+            val errorMessage = ediClient.getBusinessDocument(uuid).shouldBeLeft()
             errorMessage shouldBeEqualUsingFields errorMessage404
         }
 
@@ -342,11 +312,8 @@ class EdiAdapterClientSpec : StringSpec(
                 }
             }
 
-            val (statusInfos, errorMessage) = ediClient.getMessageStatus(uuid)
-
-            statusInfos.shouldNotBeNull()
+            val statusInfos = ediClient.getMessageStatus(uuid).shouldBeRight()
             statusInfos shouldContainExactly statusInfosStub
-            errorMessage.shouldBeNull()
         }
 
         "getMessageStatus returns messageError and no statusInfos if response is 404" {
@@ -364,10 +331,7 @@ class EdiAdapterClientSpec : StringSpec(
                 }
             }
 
-            val (statusInfos, errorMessage) = ediClient.getMessageStatus(uuid)
-
-            statusInfos.shouldBeNull()
-            errorMessage.shouldNotBeNull()
+            val errorMessage = ediClient.getMessageStatus(uuid).shouldBeLeft()
             errorMessage shouldBeEqualUsingFields errorMessage404
         }
 
@@ -394,11 +358,8 @@ class EdiAdapterClientSpec : StringSpec(
             val apprecRequest = PostAppRecRequest(
                 appRecStatus = AppRecStatus.OK
             )
-            val (metadata, errorMessage) = ediClient.postApprec(uuid, apprecSenderHerId, apprecRequest)
-
-            metadata.shouldNotBeNull()
+            val metadata = ediClient.postApprec(uuid, apprecSenderHerId, apprecRequest).shouldBeRight()
             metadata shouldBeEqualUsingFields metadataStub
-            errorMessage.shouldBeNull()
         }
 
         "postApprec returns messageError and no metadata if response is 500" {
@@ -420,10 +381,7 @@ class EdiAdapterClientSpec : StringSpec(
             val apprecRequest = PostAppRecRequest(
                 appRecStatus = AppRecStatus.OK
             )
-            val (metadata, errorMessage) = ediClient.postApprec(uuid, apprecSenderHerId, apprecRequest)
-
-            metadata.shouldBeNull()
-            errorMessage.shouldNotBeNull()
+            val errorMessage = ediClient.postApprec(uuid, apprecSenderHerId, apprecRequest).shouldBeLeft()
             errorMessage shouldBeEqualUsingFields errorMessage500
         }
 
@@ -443,11 +401,8 @@ class EdiAdapterClientSpec : StringSpec(
                 }
             }
 
-            val (isMessagesMarkedAsRead, errorMessage) = ediClient.markMessageAsRead(uuid, herId)
-
-            isMessagesMarkedAsRead.shouldNotBeNull()
+            val isMessagesMarkedAsRead = ediClient.markMessageAsRead(uuid, herId).shouldBeRight()
             isMessagesMarkedAsRead.shouldBeTrue()
-            errorMessage.shouldBeNull()
         }
 
         "markMessageAsRead returns messageError and no boolean value if response is 404" {
@@ -466,10 +421,7 @@ class EdiAdapterClientSpec : StringSpec(
                 }
             }
 
-            val (isMessagesMarkedAsRead, errorMessage) = ediClient.markMessageAsRead(uuid, herId)
-
-            isMessagesMarkedAsRead.shouldBeNull()
-            errorMessage.shouldNotBeNull()
+            val errorMessage = ediClient.markMessageAsRead(uuid, herId).shouldBeLeft()
             errorMessage shouldBeEqualUsingFields errorMessage404
         }
 
